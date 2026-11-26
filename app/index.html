@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NusaStat — Indonesia in Numbers</title>
+<meta name="description" content="NusaStat: Indonesia in Numbers. Verified national statistics for Indonesia — economy, people, prices and trade, every figure labelled with source and year.">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">N</span>
+      <span class="brand-text">
+        <strong>NusaStat</strong>
+        <span class="tagline">Indonesia in Numbers</span>
+      </span>
+    </div>
+    <nav class="site-nav" aria-label="Sections">
+      <a href="#/" data-route="">Dashboard</a>
+      <a href="#/economy" data-route="economy">Economy</a>
+      <a href="#/people" data-route="people">People</a>
+      <a href="#/prices" data-route="prices">Prices</a>
+      <a href="#/data" data-route="data">Data</a>
+    </nav>
+  </div>
+</header>
+<main id="app" class="wrap" aria-live="polite"></main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p><strong>NusaStat</strong> — an independent statistics portal for Indonesia. Figures: BPS, World Bank, IMF — every figure labelled with source and year.</p>
+    <p class="foot-note">All figures verified 26 November 2026. Figures are reproduced from official releases; see the Data page for the full methodology and source list.</p>
+  </div>
+</footer>
+<script type="module" src="./data.js"></script>
+<script type="module" src="./charts.js"></script>
+<script type="module" src="./views.js"></script>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
