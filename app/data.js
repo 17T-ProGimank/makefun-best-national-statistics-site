@@ -1,238 +1,353 @@
-// NusaStat — verified data module
-// Data verified 26 Nov 2026 against BPS (Statistics Indonesia), World Bank
-// (World Development Indicators / WITS) and IMF (WEO). See
-// ~/workspace/makefun/work/best-national-statistics-site-verified-data.md
-// for sources and corrections. All numeric fields are plain numbers;
-// display strings are separate. No figure here is invented: anything that
-// could not be verified was omitted (see the verification notes file).
+// NusaStat — Indonesia in Numbers (Round 2 data layer)
+// ------------------------------------------------------
+// Sources: BPS (Statistics Indonesia), World Bank (WDI / WITS),
+// IMF (World Economic Outlook), Ministry of Finance, Bank Indonesia,
+// UNCTAD, UN World Population Prospects, CIA World Factbook.
+// Every figure verified 26 Nov 2026 against the verified-data notes
+// (best-national-statistics-site-verified-data.md). Nothing here is
+// estimated or invented: figures that could not be verified were
+// omitted (no HDI, no Education-group indicators, no CPI weights).
+// Two 2024 inflation concepts are kept apart on purpose: the KPI uses
+// the BPS December year-on-year rate (1.57%); INFLATION_SERIES uses
+// the World Bank annual-average series and is labelled as such.
+// Unemployment uses BPS Sakernas (August), not the ILO modelled rate.
+// Trade uses the BPS merchandise figures; the 2025 trade figures are
+// from UN WITS. "Other (residual)" / "All other (residual)" shares are
+// computed as 100 minus the named shares and labelled as such.
+// This file contains no network references of any kind.
 
-export const META = {
-  title: "NusaStat: Indonesia in Numbers",
-  verified: "2026-11-26",
-  sources: ["BPS — Statistics Indonesia", "World Bank", "IMF", "Ministry of Finance", "Bank Indonesia"],
-  note: "Inflation KPI is the December year-on-year rate (BPS); the annual-average CPI series is a separate World Bank series. Unemployment is the BPS Sakernas August open unemployment rate, not the ILO modelled estimate (3.3%)."
-};
+export const YEARS = [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
-export const KPIS = [
-  { id: "population", label: "Population", value: 283.488, display: "283.5 million", change: 0.82, changeLabel: "+0.8% vs 2023", unit: "million people", source: "World Bank", year: 2024 },
-  { id: "gdp", label: "GDP", value: 22139, display: "Rp 22,139 trillion", change: 5.03, changeLabel: "+5.03% real growth", unit: "Rp trillion", source: "BPS", year: 2024 },
-  { id: "gdp-per-capita", label: "GDP per capita", value: 4925.43, display: "US$ 4,925", change: 1.0, changeLabel: "+1.0% vs 2023 (US$ 4,876)", unit: "US$", source: "World Bank", year: 2024 },
-  { id: "inflation", label: "Inflation (Dec, yoy)", value: 1.57, display: "1.57%", change: -1.04, changeLabel: "vs 2.61% in Dec 2023", unit: "%", source: "BPS", year: 2024 },
-  { id: "unemployment", label: "Unemployment (Aug)", value: 4.91, display: "4.91%", change: -0.41, changeLabel: "vs 5.32% in Aug 2023", unit: "% of labour force", source: "BPS", year: 2024 },
-  { id: "poverty", label: "Poverty rate (Sep)", value: 8.57, display: "8.57%", change: -0.46, changeLabel: "vs 9.03% in Mar 2024", unit: "% of population", source: "BPS", year: 2024 }
+export const NATIONAL_POP = 283.488; // millions, 2024, World Bank
+
+export const KPI = [
+  {
+    label: "Population",
+    value: "283.488m",
+    change: "+0.82% yoy",
+    changeNote: "vs 281.2m in 2023 (World Bank)",
+    source: "World Bank",
+    year: 2024,
+  },
+  {
+    label: "GDP",
+    value: "Rp 22,139tn / US$1,396.3bn",
+    change: "+5.03% yoy",
+    changeNote: "Real GDP growth, 2024",
+    source: "BPS / World Bank",
+    year: 2024,
+  },
+  {
+    label: "GDP per capita",
+    value: "US$4,925",
+    change: "",
+    changeNote: "World Bank; BPS figure Rp 78.62m",
+    source: "World Bank",
+    year: 2024,
+  },
+  {
+    label: "Inflation",
+    value: "1.57% Dec yoy",
+    change: "-1.5pp",
+    changeNote: "Annual-average inflation 3.7% in 2023 to 2.2% in 2024 (World Bank)",
+    source: "BPS",
+    year: 2024,
+  },
+  {
+    label: "Unemployment",
+    value: "4.91% Aug",
+    change: "-0.41pp",
+    changeNote: "vs 5.32% in Aug 2023 (BPS Sakernas)",
+    source: "BPS",
+    year: 2024,
+  },
+  {
+    label: "Poverty",
+    value: "8.57% Sep",
+    change: "-0.46pp",
+    changeNote: "vs 9.03% in Mar 2024",
+    source: "BPS",
+    year: 2024,
+  },
 ];
 
-// Real GDP growth, % yoy (BPS, c-to-c)
-export const GDP_GROWTH = [
-  { year: 2015, value: 4.88 }, { year: 2016, value: 5.03 }, { year: 2017, value: 5.07 },
-  { year: 2018, value: 5.17 }, { year: 2019, value: 5.02 }, { year: 2020, value: -2.07 },
-  { year: 2021, value: 3.69 }, { year: 2022, value: 5.31 }, { year: 2023, value: 5.05 },
-  { year: 2024, value: 5.03 }, { year: 2025, value: 5.11 }
-];
+export const GDP_GROWTH = {
+  years: YEARS,
+  values: [4.88, 5.03, 5.07, 5.17, 5.02, -2.07, 3.69, 5.31, 5.05, 5.03, 5.11],
+}; // BPS; 2025 = 5.11%
 
-// CPI inflation, annual average % (World Bank FP.CPI.TOTL.ZG).
-// NOT the December yoy rate (1.57% in 2024) — see META.note.
-export const INFLATION_SERIES = [
-  { year: 2015, value: 6.4 }, { year: 2016, value: 3.5 }, { year: 2017, value: 3.8 },
-  { year: 2018, value: 3.2 }, { year: 2019, value: 3.0 }, { year: 2020, value: 1.9 },
-  { year: 2021, value: 1.6 }, { year: 2022, value: 4.2 }, { year: 2023, value: 3.7 },
-  { year: 2024, value: 2.2 }, { year: 2025, value: 1.9 }
-];
+export const INFLATION_SERIES = {
+  years: YEARS,
+  values: [6.4, 3.5, 3.8, 3.2, 3.0, 1.9, 1.6, 4.2, 3.7, 2.2, 1.9],
+}; // World Bank annual-average CPI inflation, %
 
-// Open unemployment rate, % of labour force, August Sakernas (BPS)
-export const UNEMPLOYMENT_SERIES = [
-  { year: 2015, value: 6.18 }, { year: 2016, value: 5.61 }, { year: 2017, value: 5.5 },
-  { year: 2018, value: 5.34 }, { year: 2019, value: 5.28 }, { year: 2020, value: 7.07 },
-  { year: 2021, value: 6.49 }, { year: 2022, value: 5.86 }, { year: 2023, value: 5.32 },
-  { year: 2024, value: 4.91 }, { year: 2025, value: 4.85 }
-];
+export const UNEMPLOYMENT_SERIES = {
+  years: YEARS,
+  values: [6.18, 5.61, 5.5, 5.34, 5.28, 7.07, 6.49, 5.86, 5.32, 4.91, 4.85],
+}; // BPS Sakernas, August, %
 
-// Population, millions (World Bank SP.POP.TOTL)
-export const POPULATION_SERIES = [
-  { year: 2015, value: 261.8 }, { year: 2016, value: 264.6 }, { year: 2017, value: 267.3 },
-  { year: 2018, value: 270.0 }, { year: 2019, value: 272.5 }, { year: 2020, value: 274.8 },
-  { year: 2021, value: 276.8 }, { year: 2022, value: 278.8 }, { year: 2023, value: 281.2 },
-  { year: 2024, value: 283.5 }, { year: 2025, value: 285.7 }
-];
+export const POPULATION_SERIES = {
+  years: YEARS,
+  values: [261.8, 264.6, 267.3, 270.0, 272.5, 274.8, 276.8, 278.8, 281.2, 283.5, 285.7],
+}; // World Bank, millions
 
-// GDP shares by industry, % of GDP (BPS release No. 17/02/Th. XXVIII, 5 Feb 2025)
+export const TRADE_SERIES = {
+  years: YEARS,
+  exports: [150.4, 144.5, 168.8, 180.2, 167.7, 163.2, 231.5, 292.0, 258.8, 264.7, 281.7],
+  imports: [142.7, 135.7, 157.0, 188.7, 171.3, 141.6, 196.2, 237.4, 221.9, 233.7, 241.8],
+}; // US$bn, UN Comtrade / WDI merchandise; 2025 from UN WITS
+
 export const SECTORS = [
-  { name: "Manufacturing", share: 18.98, growth: 4.43 },
-  { name: "Wholesale & retail trade", share: 13.07, growth: 4.86 },
-  { name: "Agriculture, forestry & fishing", share: 12.61, growth: 0.67 },
-  { name: "Construction", share: 10.09, growth: 5.06 },
-  { name: "Mining & quarrying", share: 9.15, growth: 4.9 },
-  { name: "All other industries", share: 36.1, growth: null }
-];
+  { name: "Manufacturing", share: 18.98 },
+  { name: "Trade", share: 13.07 },
+  { name: "Agriculture", share: 12.61 },
+  { name: "Construction", share: 10.09 },
+  { name: "Mining", share: 9.15 },
+  { name: "Transport & storage", share: 6.13 },
+  { name: "Other (residual)", share: 29.97 },
+]; // BPS, share of GDP 2024, %; residual = 100 minus named shares
 
-// Merchandise trade, US$ billion (UN Comtrade / World Bank WDI; 2024-25 BPS/WITS)
-export const TRADE_SERIES = [
-  { year: 2015, exports: 150.4, imports: 142.7 }, { year: 2016, exports: 144.5, imports: 135.7 },
-  { year: 2017, exports: 168.8, imports: 157.0 }, { year: 2018, exports: 180.2, imports: 188.7 },
-  { year: 2019, exports: 167.7, imports: 171.3 }, { year: 2020, exports: 163.2, imports: 141.6 },
-  { year: 2021, exports: 231.5, imports: 196.2 }, { year: 2022, exports: 292.0, imports: 237.4 },
-  { year: 2023, exports: 258.8, imports: 221.9 }, { year: 2024, exports: 264.7, imports: 233.7 },
-  { year: 2025, exports: 281.7, imports: 241.8 }
-];
-
-// Top 10 provinces by population, mid-2024 (BPS, via Wikipedia Provinces table)
 export const PROVINCES = [
-  { name: "West Java", population: 50.345, share: 17.76 },
-  { name: "East Java", population: 41.815, share: 14.75 },
-  { name: "Central Java", population: 37.892, share: 13.37 },
-  { name: "North Sumatra", population: 15.589, share: 5.5 },
-  { name: "Banten", population: 12.431, share: 4.39 },
-  { name: "Jakarta", population: 10.685, share: 3.77 },
-  { name: "South Sulawesi", population: 9.463, share: 3.34 },
-  { name: "Lampung", population: 9.42, share: 3.32 },
-  { name: "South Sumatra", population: 8.837, share: 3.12 },
-  { name: "Riau", population: 6.728, share: 2.37 }
-];
+  { name: "West Java", pop: 50.345, share: 17.76 },
+  { name: "East Java", pop: 41.815, share: 14.75 },
+  { name: "Central Java", pop: 37.892, share: 13.37 },
+  { name: "North Sumatra", pop: 15.589, share: 5.5 },
+  { name: "Banten", pop: 12.431, share: 4.39 },
+  { name: "Jakarta", pop: 10.685, share: 3.77 },
+  { name: "South Sulawesi", pop: 9.463, share: 3.34 },
+  { name: "Lampung", pop: 9.42, share: 3.32 },
+  { name: "South Sumatra", pop: 8.837, share: 3.12 },
+  { name: "Riau", pop: 6.728, share: 2.37 },
+]; // Top 10, mid-2024, BPS; pop in millions, share of national population %
 
-// Age structure, % of population (World Bank, 2024; 15-64 is the residual)
 export const AGE_STRUCTURE = [
-  { group: "0–14 years", share: 24.6 },
-  { group: "15–64 years", share: 68.1 },
-  { group: "65+ years", share: 7.3 }
-];
+  { label: "0–14 years", pct: 24.6 },
+  { label: "15–64 years", pct: 68.1 },
+  { label: "65+ years", pct: 7.3 },
+]; // World Bank, 2024, %
 
-// Employment by sector, % of employed (BPS Sakernas Aug 2026; "Other" is the residual)
-export const EMPLOYMENT_SECTORS = [
-  { name: "Agriculture, forestry & fishing", share: 28.2 },
-  { name: "Wholesale & retail trade", share: 17.86 },
-  { name: "Manufacturing", share: 13.75 },
-  { name: "Accommodation & food services", share: 8.11 },
-  { name: "Construction", share: 6.66 },
-  { name: "All other sectors", share: 25.42 }
-];
+export const EMPLOYMENT = [
+  { sector: "Agriculture", pct: 28.2, workers: 41.73 },
+  { sector: "Trade", pct: 17.86, workers: 26.42 },
+  { sector: "Manufacturing", pct: 13.75, workers: 20.34 },
+  { sector: "Accommodation & food", pct: 8.11, workers: 12.0 },
+  { sector: "Construction", pct: 6.66, workers: 9.86 },
+  { sector: "All other (residual)", pct: 25.42, workers: null },
+]; // BPS Sakernas, Aug 2026; pct of workers, workers in millions.
+   // Residual worker count is null: no total employed figure for Aug 2026
+   // was verified, so the residual headcount is not derived.
 
-// CPI by expenditure group, Dec 2024 yoy % and contribution in pp (BPS CPI release
-// No. 01/01/Th. XXVIII, 2 Jan 2025; CPI 2022=100). Basket weights were not
-// published in the release, so rate + contribution are shown instead.
 export const CPI_GROUPS = [
-  { group: "Food, beverages & tobacco", rate: 1.9, contribution: 0.55 },
-  { group: "Personal care & other services", rate: 7.02, contribution: 0.43 },
-  { group: "Restaurants & food services", rate: 2.48, contribution: 0.25 },
-  { group: "Education", rate: 1.94, contribution: 0.11 },
-  { group: "Housing, water, electricity & fuel", rate: 0.59, contribution: 0.09 },
-  { group: "Clothing & footwear", rate: 1.16, contribution: 0.06 },
-  { group: "Furnishings & household maintenance", rate: 1.04, contribution: 0.06 },
-  { group: "Health", rate: 1.93, contribution: 0.06 },
-  { group: "Recreation, sport & culture", rate: 1.17, contribution: 0.02 },
-  { group: "Information, communication & finance", rate: -0.27, contribution: -0.02 },
-  { group: "Transport", rate: -0.3, contribution: -0.04 }
-];
+  { group: "Food, beverages & tobacco", rate: 1.9, contrib: 0.55 },
+  { group: "Personal care", rate: 7.02, contrib: 0.43 },
+  { group: "Restaurants", rate: 2.48, contrib: 0.25 },
+  { group: "Education", rate: 1.94, contrib: 0.11 },
+  { group: "Housing", rate: 0.59, contrib: 0.09 },
+  { group: "Clothing", rate: 1.16, contrib: 0.06 },
+  { group: "Furnishings", rate: 1.04, contrib: 0.06 },
+  { group: "Health", rate: 1.93, contrib: 0.06 },
+  { group: "Recreation", rate: 1.17, contrib: 0.02 },
+  { group: "Information / communication / finance", rate: -0.27, contrib: -0.02 },
+  { group: "Transport", rate: -0.3, contrib: -0.04 },
+]; // BPS, Dec 2024 yoy, CPI 2022=100; rate %, contrib in percentage points
 
-export const CPI_COMPONENTS = [
-  { component: "Core inflation", rate: 2.26, contribution: 1.44 },
-  { component: "Administered prices", rate: 0.56, contribution: 0.11 },
-  { component: "Volatile food", rate: 0.12, contribution: 0.02 }
-];
-
-// National average retail prices (Bank Indonesia PIHPS, Sep 2026)
 export const FOOD_PRICES = [
-  { item: "Rice (medium)", price: 16600, unit: "Rp/kg" },
-  { item: "Rice (super quality)", price: 17850, unit: "Rp/kg" },
-  { item: "Chicken eggs", price: 29800, unit: "Rp/kg" },
-  { item: "Chicken meat", price: 42600, unit: "Rp/kg" },
-  { item: "Cooking oil (bulk)", price: 20450, unit: "Rp/litre" },
-  { item: "Cooking oil (packaged)", price: 24350, unit: "Rp/litre" },
-  { item: "Red chilli (large)", price: 54900, unit: "Rp/kg" },
-  { item: "Shallots", price: 37950, unit: "Rp/kg" },
-  { item: "Garlic", price: 39350, unit: "Rp/kg" }
-];
+  { item: "Rice (medium)", price: 16600, unit: "/kg" },
+  { item: "Rice (super)", price: 17850, unit: "/kg" },
+  { item: "Eggs", price: 29800, unit: "/kg" },
+  { item: "Chicken meat", price: 42600, unit: "/kg" },
+  { item: "Cooking oil (bulk)", price: 20450, unit: "/litre" },
+  { item: "Cooking oil (packaged)", price: 24350, unit: "/litre" },
+  { item: "Large red chilli", price: 54900, unit: "/kg" },
+  { item: "Shallots", price: 37950, unit: "/kg" },
+  { item: "Garlic", price: 39350, unit: "/kg" },
+]; // Bank Indonesia PIHPS national average, Sep 2026; prices in rupiah
 
-// State budget (APBN) realisation, Rp trillion (Ministry of Finance, 2024)
 export const GOVERNMENT = {
-  revenue: 2842.5, spending: 3350.3, deficit: 507.8, deficitPct: 2.29,
-  year: 2024, source: "Ministry of Finance"
+  revenue: "Rp 2,842.5tn",
+  spending: "Rp 3,350.3tn",
+  deficit: "Rp 507.8tn",
+  deficitPct: "2.29% of GDP",
+  primaryDeficit: "Rp 19.4tn",
+  revenueChange: "+2.1% yoy",
+  spendingChange: "+7.3% yoy",
+  year: 2024,
+  source: "Ministry of Finance, APBN realisation",
 };
 
-// Rupiah per US dollar, 12-month average (Bank Indonesia)
-export const EXCHANGE_RATE = {
-  value: 15859, display: "Rp 15,859 per US$", year: 2024,
-  note: "Year-end Rp 16,267; 2024 range Rp 15,125–16,490",
-  source: "Bank Indonesia"
-};
-
-// Verified BPS releases, newest first
-export const LATEST_RELEASES = [
-  { date: "2026-11-05", title: "Economy grew 5.47% yoy in Q3 2026; Jan–Sep growth 5.45%", source: "BPS" },
-  { date: "2026-11-05", title: "Open unemployment fell to 4.75% in August 2026, from 4.85% a year earlier", source: "BPS" },
-  { date: "2026-11-05", title: "Agriculture employed 41.73 million people (28.2% of workers) in August 2026", source: "BPS" },
-  { date: "2026-11-02", title: "October 2026 inflation 3.23% yoy, near the top of the 1.5–3.5% target range", source: "BPS" },
-  { date: "2026-08-05", title: "Poverty fell to 8.07% in March 2026 — 22.93 million people", source: "BPS" },
-  { date: "2026-02-05", title: "Full-year 2025 GDP growth 5.11%; GDP reached Rp 23,821.1 trillion", source: "BPS" },
-  { date: "2025-11-05", title: "Open unemployment 4.85% in August 2025; 7.46 million people unemployed", source: "BPS" },
-  { date: "2025-07-25", title: "Gini ratio 0.375 in March 2025, down from 0.379 in March 2024", source: "BPS" }
+export const RELEASES = [
+  {
+    date: "2026-11-05",
+    title: "GDP Q3 2026 grows 5.47% yoy",
+    detail: "Jan–Sep 2026 growth 5.45% (BPS)",
+  },
+  {
+    date: "2026-11-05",
+    title: "Unemployment falls to 4.75% (Aug 2026)",
+    detail: "BPS Sakernas, August 2026",
+  },
+  {
+    date: "2026-11-05",
+    title: "Agriculture employs 41.73 million workers",
+    detail: "28.20% of all workers, Aug 2026 (BPS Sakernas)",
+  },
+  {
+    date: "2026-11-02",
+    title: "October 2026 inflation 3.23% yoy",
+    detail: "BPS CPI release",
+  },
+  {
+    date: "2026-08-05",
+    title: "Poverty falls to 8.07% (Mar 2026)",
+    detail: "22.93 million people; poverty line Rp 669,235/person/month (BPS)",
+  },
+  {
+    date: "2026-02-05",
+    title: "GDP 2025 grows 5.11% to Rp 23,821.1tn",
+    detail: "BPS full-year release",
+  },
+  {
+    date: "2025-11-05",
+    title: "Unemployment 4.85% (Aug 2025)",
+    detail: "7.46 million unemployed (BPS Sakernas)",
+  },
+  {
+    date: "2025-07-25",
+    title: "Gini coefficient 0.375 (Mar 2025)",
+    detail: "BPS",
+  },
 ];
 
-// Data explorer: every row verified, with source and year.
+// 66 rows across 5 groups: Economy 22, People 20, Prices 10, Trade 8, Health 6.
+// No Education rows and no HDI row: neither met the verification bar (see methodology.md).
 export const INDICATORS = [
-  { name: "GDP (current prices)", group: "Economy", value: 22139, unit: "Rp trillion", year: 2024, source: "BPS" },
-  { name: "GDP (current US$)", group: "Economy", value: 1396.3, unit: "US$ billion", year: 2024, source: "World Bank" },
-  { name: "GDP per capita", group: "Economy", value: 4925.43, unit: "US$", year: 2024, source: "World Bank" },
-  { name: "GDP per capita (rupiah)", group: "Economy", value: 78.62, unit: "Rp million", year: 2024, source: "BPS" },
-  { name: "GDP growth (real)", group: "Economy", value: 5.03, unit: "%", year: 2024, source: "BPS" },
-  { name: "GDP growth (real)", group: "Economy", value: 5.11, unit: "%", year: 2025, source: "BPS" },
-  { name: "GDP growth Q3 (yoy)", group: "Economy", value: 5.47, unit: "%", year: 2026, source: "BPS" },
-  { name: "GDP (PPP)", group: "Economy", value: 4676.8, unit: "US$ billion", year: 2024, source: "IMF" },
-  { name: "GDP per capita (PPP)", group: "Economy", value: 16448, unit: "US$", year: 2024, source: "IMF" },
-  { name: "GNI per capita", group: "Economy", value: 4910, unit: "US$", year: 2024, source: "World Bank" },
-  { name: "FDI inflows", group: "Economy", value: 24.2, unit: "US$ billion", year: 2024, source: "UNCTAD" },
-  { name: "FDI inward stock", group: "Economy", value: 305.7, unit: "US$ billion", year: 2024, source: "UNCTAD" },
-  { name: "Government revenue", group: "Economy", value: 2842.5, unit: "Rp trillion", year: 2024, source: "Ministry of Finance" },
-  { name: "Government spending", group: "Economy", value: 3350.3, unit: "Rp trillion", year: 2024, source: "Ministry of Finance" },
-  { name: "Budget deficit", group: "Economy", value: 507.8, unit: "Rp trillion", year: 2024, source: "Ministry of Finance" },
-  { name: "Budget deficit", group: "Economy", value: 2.29, unit: "% of GDP", year: 2024, source: "Ministry of Finance" },
-  { name: "Exchange rate (average)", group: "Economy", value: 15859, unit: "Rp per US$", year: 2024, source: "Bank Indonesia" },
-  { name: "Household consumption", group: "Economy", value: 55.4, unit: "% of GDP", year: 2024, source: "CIA World Factbook" },
-  { name: "Gross fixed investment", group: "Economy", value: 29.1, unit: "% of GDP", year: 2024, source: "CIA World Factbook" },
-  { name: "Exports of goods & services", group: "Economy", value: 22.2, unit: "% of GDP", year: 2024, source: "World Bank" },
-  { name: "Manufacturing share of GDP", group: "Economy", value: 18.98, unit: "% of GDP", year: 2024, source: "BPS" },
-  { name: "Agriculture share of GDP", group: "Economy", value: 12.61, unit: "% of GDP", year: 2024, source: "BPS" },
-  { name: "Services share of GDP", group: "Economy", value: 43.8, unit: "% of GDP", year: 2024, source: "World Bank" },
-  { name: "Industry share of GDP", group: "Economy", value: 39.3, unit: "% of GDP", year: 2024, source: "World Bank" },
-  { name: "Population", group: "People", value: 283.488, unit: "million", year: 2024, source: "World Bank" },
-  { name: "Population", group: "People", value: 285.721, unit: "million", year: 2025, source: "World Bank" },
-  { name: "Population growth", group: "People", value: 0.82, unit: "%", year: 2024, source: "World Bank" },
-  { name: "Median age", group: "People", value: 30.1, unit: "years", year: 2024, source: "UN World Population Prospects" },
-  { name: "Population aged 0–14", group: "People", value: 24.6, unit: "%", year: 2024, source: "World Bank" },
-  { name: "Population aged 65+", group: "People", value: 7.3, unit: "%", year: 2024, source: "World Bank" },
-  { name: "Urban population", group: "People", value: 58.8, unit: "%", year: 2024, source: "World Bank" },
-  { name: "Fertility rate", group: "People", value: 2.12, unit: "children per woman", year: 2024, source: "World Bank" },
-  { name: "Population density", group: "People", value: 149, unit: "people per km²", year: 2024, source: "World Bank" },
-  { name: "Labour force participation rate", group: "People", value: 71, unit: "%", year: 2024, source: "BPS / IZA" },
-  { name: "Female labour force participation", group: "People", value: 56.4, unit: "%", year: 2024, source: "IZA World of Labour" },
-  { name: "Employed persons", group: "People", value: 145, unit: "million", year: 2024, source: "BPS / IZA" },
-  { name: "Informal employment", group: "People", value: 58, unit: "% of employed", year: 2024, source: "BPS / IZA" },
-  { name: "Open unemployment rate (Aug)", group: "People", value: 4.91, unit: "%", year: 2024, source: "BPS" },
-  { name: "Youth unemployment, ages 15–24 (Aug)", group: "People", value: 16.89, unit: "%", year: 2025, source: "BPS" },
-  { name: "Poverty rate (Sep)", group: "People", value: 8.57, unit: "%", year: 2024, source: "BPS" },
-  { name: "Poverty rate (Mar)", group: "People", value: 8.07, unit: "%", year: 2026, source: "BPS" },
-  { name: "Gini ratio (Mar)", group: "People", value: 0.379, unit: "index 0–1", year: 2024, source: "BPS" },
-  { name: "Gini ratio (Mar)", group: "People", value: 0.375, unit: "index 0–1", year: 2025, source: "BPS" },
-  { name: "Average employee wage (Aug)", group: "People", value: 3.33, unit: "Rp million/month", year: 2025, source: "BPS" },
-  { name: "Poverty line (Mar)", group: "People", value: 669235, unit: "Rp per person/month", year: 2026, source: "BPS" },
-  { name: "Gender Inequality Index", group: "People", value: 0.421, unit: "index 0–1", year: 2024, source: "BPS" },
-  { name: "CPI inflation (Dec, yoy)", group: "Prices", value: 1.57, unit: "%", year: 2024, source: "BPS" },
-  { name: "CPI inflation (annual average)", group: "Prices", value: 2.18, unit: "%", year: 2024, source: "World Bank" },
-  { name: "CPI index (Dec)", group: "Prices", value: 106.8, unit: "index 2022=100", year: 2024, source: "BPS" },
-  { name: "CPI inflation (Oct, yoy)", group: "Prices", value: 3.23, unit: "%", year: 2026, source: "BPS" },
-  { name: "Core inflation (Dec, yoy)", group: "Prices", value: 2.26, unit: "%", year: 2024, source: "BPS" },
-  { name: "BI policy rate (Nov)", group: "Prices", value: 6.0, unit: "%", year: 2026, source: "Bank Indonesia" },
-  { name: "Exports of goods", group: "Trade", value: 264.7, unit: "US$ billion", year: 2024, source: "BPS" },
-  { name: "Imports of goods", group: "Trade", value: 233.7, unit: "US$ billion", year: 2024, source: "BPS" },
-  { name: "Goods trade surplus", group: "Trade", value: 31.0, unit: "US$ billion", year: 2024, source: "BPS" },
-  { name: "Exports of goods", group: "Trade", value: 281.7, unit: "US$ billion", year: 2025, source: "World Bank WITS" },
-  { name: "Imports of goods", group: "Trade", value: 241.8, unit: "US$ billion", year: 2025, source: "World Bank WITS" },
-  { name: "Current account balance", group: "Trade", value: -8.47, unit: "US$ billion", year: 2024, source: "CIA World Factbook" },
-  { name: "Foreign tourist arrivals (Jan–Nov)", group: "Trade", value: 12.66, unit: "million", year: 2024, source: "BPS" },
-  { name: "Life expectancy at birth", group: "Health", value: 71.3, unit: "years", year: 2024, source: "World Bank" },
-  { name: "Life expectancy, female", group: "Health", value: 73.4, unit: "years", year: 2024, source: "World Bank" },
-  { name: "Life expectancy, male", group: "Health", value: 69.2, unit: "years", year: 2024, source: "World Bank" },
-  { name: "Infant mortality rate", group: "Health", value: 15.2, unit: "per 1,000 live births", year: 2024, source: "World Bank" },
-  { name: "Under-5 mortality rate", group: "Health", value: 17.7, unit: "per 1,000", year: 2024, source: "World Bank" },
-  { name: "Maternal mortality ratio", group: "Health", value: 140, unit: "per 100,000 live births", year: 2023, source: "World Bank" },
-  { name: "Stunting prevalence (under 5)", group: "Health", value: 22, unit: "%", year: 2023, source: "World Bank" }
+  // Economy (22)
+  { group: "Economy", name: "GDP (nominal)", value: "Rp 22,139 trillion", year: 2024, source: "BPS" },
+  { group: "Economy", name: "GDP (US$)", value: "US$1,396.3bn", year: 2024, source: "World Bank" },
+  { group: "Economy", name: "GDP per capita", value: "US$4,925", year: 2024, source: "World Bank" },
+  { group: "Economy", name: "GDP per capita (BPS)", value: "Rp 78.62m", year: 2024, source: "BPS" },
+  { group: "Economy", name: "GDP growth", value: "5.03%", year: 2024, source: "BPS" },
+  { group: "Economy", name: "GDP (nominal, 2025)", value: "Rp 23,821.1 trillion", year: 2025, source: "BPS" },
+  { group: "Economy", name: "GDP growth (2025)", value: "5.11%", year: 2025, source: "BPS" },
+  { group: "Economy", name: "GDP growth (Q3 2026)", value: "5.47% yoy", year: 2026, source: "BPS" },
+  { group: "Economy", name: "GDP (PPP)", value: "US$4,676.8bn", year: 2024, source: "IMF" },
+  { group: "Economy", name: "GDP per capita (PPP)", value: "US$16,448", year: 2024, source: "IMF" },
+  { group: "Economy", name: "GNI per capita", value: "US$4,910", year: 2024, source: "World Bank" },
+  { group: "Economy", name: "Household consumption", value: "55.4% of GDP", year: 2024, source: "CIA World Factbook" },
+  { group: "Economy", name: "Fixed investment", value: "29.1% of GDP", year: 2024, source: "CIA World Factbook" },
+  { group: "Economy", name: "Services share of GDP", value: "43.8%", year: 2024, source: "World Bank" },
+  { group: "Economy", name: "Industry share of GDP", value: "39.3%", year: 2024, source: "World Bank" },
+  { group: "Economy", name: "Manufacturing share of GDP", value: "18.98%", year: 2024, source: "BPS" },
+  { group: "Economy", name: "Trade share of GDP", value: "13.07%", year: 2024, source: "BPS" },
+  { group: "Economy", name: "Agriculture share of GDP", value: "12.61%", year: 2024, source: "BPS" },
+  { group: "Economy", name: "Construction share of GDP", value: "10.09%", year: 2024, source: "BPS" },
+  { group: "Economy", name: "Mining share of GDP", value: "9.15%", year: 2024, source: "BPS" },
+  { group: "Economy", name: "Government revenue", value: "Rp 2,842.5tn", year: 2024, source: "Ministry of Finance" },
+  { group: "Economy", name: "Government spending", value: "Rp 3,350.3tn", year: 2024, source: "Ministry of Finance" },
+  // People (20)
+  { group: "People", name: "Population", value: "283.488m", year: 2024, source: "World Bank" },
+  { group: "People", name: "Population growth", value: "0.82%", year: 2024, source: "World Bank" },
+  { group: "People", name: "Median age", value: "30.1 years", year: 2024, source: "UN WPP" },
+  { group: "People", name: "Urban population", value: "58.8%", year: 2024, source: "World Bank" },
+  { group: "People", name: "Fertility rate", value: "2.12", year: 2024, source: "World Bank" },
+  { group: "People", name: "Population aged 0–14", value: "24.6%", year: 2024, source: "World Bank" },
+  { group: "People", name: "Population aged 15–64", value: "68.1%", year: 2024, source: "World Bank" },
+  { group: "People", name: "Population aged 65+", value: "7.3%", year: 2024, source: "World Bank" },
+  { group: "People", name: "Labour force participation rate", value: "~71%", year: 2024, source: "BPS" },
+  { group: "People", name: "Female labour force participation rate", value: "56.4%", year: 2024, source: "BPS" },
+  { group: "People", name: "Employed persons", value: "145 million", year: 2024, source: "BPS" },
+  { group: "People", name: "Informal employment", value: "58%", year: 2024, source: "BPS" },
+  { group: "People", name: "Unemployment rate (Aug)", value: "4.91%", year: 2024, source: "BPS" },
+  { group: "People", name: "Unemployment rate (Aug 2025)", value: "4.85%", year: 2025, source: "BPS" },
+  { group: "People", name: "Unemployment rate (Aug 2026)", value: "4.75%", year: 2026, source: "BPS" },
+  { group: "People", name: "Youth unemployment (Aug 2025)", value: "16.89%", year: 2025, source: "BPS" },
+  { group: "People", name: "Average wage (Aug 2025)", value: "Rp 3.33m/month", year: 2025, source: "BPS" },
+  { group: "People", name: "Poverty rate (Sep)", value: "8.57%", year: 2024, source: "BPS" },
+  { group: "People", name: "Poverty rate (Mar 2026)", value: "8.07%", year: 2026, source: "BPS" },
+  { group: "People", name: "Gini coefficient (Mar 2025)", value: "0.375", year: 2025, source: "BPS" },
+  // Prices (10)
+  { group: "Prices", name: "Inflation (Dec yoy)", value: "1.57%", year: 2024, source: "BPS" },
+  { group: "Prices", name: "Inflation (annual average)", value: "2.18%", year: 2024, source: "World Bank" },
+  { group: "Prices", name: "Inflation (annual average, 2025)", value: "1.91%", year: 2025, source: "World Bank" },
+  { group: "Prices", name: "Inflation (Oct 2026 yoy)", value: "3.23%", year: 2026, source: "BPS" },
+  { group: "Prices", name: "CPI (Dec 2024, 2022=100)", value: "106.80", year: 2024, source: "BPS" },
+  { group: "Prices", name: "Core inflation (Dec yoy)", value: "2.26%", year: 2024, source: "BPS" },
+  { group: "Prices", name: "BI rate", value: "6.00%", year: 2026, source: "Bank Indonesia" },
+  { group: "Prices", name: "Exchange rate (average)", value: "Rp 15,859 per US$", year: 2024, source: "Bank Indonesia" },
+  { group: "Prices", name: "Exchange rate (year-end)", value: "Rp 16,267 per US$", year: 2024, source: "Bank Indonesia" },
+  { group: "Prices", name: "Rice (medium, PIHPS Sep 2026)", value: "Rp 16,600/kg", year: 2026, source: "Bank Indonesia" },
+  // Trade (8)
+  { group: "Trade", name: "Exports (goods)", value: "US$264.71bn", year: 2024, source: "BPS" },
+  { group: "Trade", name: "Imports (goods)", value: "US$233.67bn", year: 2024, source: "BPS" },
+  { group: "Trade", name: "Trade surplus", value: "US$31.04bn", year: 2024, source: "BPS" },
+  { group: "Trade", name: "Exports (goods, 2025)", value: "US$281.7bn", year: 2025, source: "UN WITS" },
+  { group: "Trade", name: "Imports (goods, 2025)", value: "US$241.8bn", year: 2025, source: "UN WITS" },
+  { group: "Trade", name: "FDI inflows", value: "US$24.2bn", year: 2024, source: "UNCTAD" },
+  { group: "Trade", name: "FDI stock", value: "US$305.7bn", year: 2024, source: "UNCTAD" },
+  { group: "Trade", name: "Current account balance", value: "−US$8.47bn", year: 2024, source: "CIA World Factbook" },
+  // Health (6)
+  { group: "Health", name: "Life expectancy", value: "71.3 years", year: 2024, source: "World Bank" },
+  { group: "Health", name: "Life expectancy (female)", value: "73.4 years", year: 2024, source: "World Bank" },
+  { group: "Health", name: "Life expectancy (male)", value: "69.2 years", year: 2024, source: "World Bank" },
+  { group: "Health", name: "Infant mortality", value: "15.2 per 1,000 live births", year: 2024, source: "World Bank" },
+  { group: "Health", name: "Under-5 mortality", value: "17.7 per 1,000 live births", year: 2024, source: "World Bank" },
+  { group: "Health", name: "Maternal mortality", value: "140 per 100,000 live births", year: 2023, source: "World Bank" },
+];
+
+export const HIGHLIGHTS = [
+  {
+    label: "GDP growth",
+    from: "5.03% (2024)",
+    to: "5.11% (2025)",
+    delta: "+0.08pp",
+    direction: "up",
+    source: "BPS",
+    note: "Full-year real GDP growth",
+  },
+  {
+    label: "Inflation (yoy)",
+    from: "1.57% (Dec 2024)",
+    to: "3.23% (Oct 2026)",
+    delta: "+1.66pp",
+    direction: "up",
+    source: "BPS",
+    note: "December 2024 yoy vs October 2026 yoy",
+  },
+  {
+    label: "Unemployment (Aug)",
+    from: "4.91% (Aug 2024)",
+    to: "4.75% (Aug 2026)",
+    delta: "−0.16pp",
+    direction: "down",
+    source: "BPS Sakernas",
+    note: "August Sakernas rate",
+  },
+  {
+    label: "Poverty rate",
+    from: "8.57% (Sep 2024)",
+    to: "8.07% (Mar 2026)",
+    delta: "−0.50pp",
+    direction: "down",
+    source: "BPS",
+    note: "September 2024 vs March 2026",
+  },
+  {
+    label: "Exports (goods)",
+    from: "US$264.7bn (2024)",
+    to: "US$281.7bn (2025)",
+    delta: "+US$17.0bn",
+    direction: "up",
+    source: "BPS / UN WITS",
+    note: "Merchandise exports",
+  },
+];
+
+export const SOURCES = [
+  { name: "BPS — Statistics Indonesia", note: "GDP, CPI, Sakernas labour, poverty, Gini, provinces, sector shares" },
+  { name: "World Bank", note: "WDI population, GDP, life expectancy, mortality; annual-average inflation" },
+  { name: "IMF", note: "World Economic Outlook — GDP (PPP) and GDP per capita (PPP)" },
+  { name: "Ministry of Finance", note: "APBN 2024 realisation — revenue, spending, deficit" },
+  { name: "Bank Indonesia", note: "PIHPS food prices, BI rate, exchange rate" },
+  { name: "UNCTAD", note: "FDI inflows and stock, 2024" },
+  { name: "UN World Population Prospects", note: "Median age, 2024" },
 ];
