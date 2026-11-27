@@ -1,16 +1,17 @@
 # NusaStat — Methodology
 
 Indonesia in Numbers. All figures in `app/data.js` were verified on
-26 November 2026 against the project's verified-data notes. No figure
-on this site is estimated, modelled by us, or invented: anything that
-could not be verified to a named official source was omitted (see
-"Omitted, not guessed" below).
+26 November 2026 against the project's verified-data notes, and the
+38-province dataset was verified on 28 November 2026 against the BPS
+tables named below. No figure on this site is estimated, modelled by
+us, or invented: anything that could not be verified to a named
+official source was omitted (see "Omitted, not guessed" below).
 
 ## Data sources
 
 | Source | What it supplies here |
 |---|---|
-| BPS — Statistics Indonesia | GDP and GDP growth, CPI and CPI groups, Sakernas unemployment and employment, poverty and poverty line, Gini, provincial populations, sector shares of GDP, foreign tourists (not in the explorer) |
+| BPS — Statistics Indonesia | GDP and GDP growth, CPI and CPI groups, Sakernas unemployment and employment, poverty and poverty line, Gini, provincial populations, provincial poverty and unemployment, sector shares of GDP, foreign tourists (not in the explorer) |
 | World Bank (WDI / WITS) | Population, GDP in US$, GDP per capita, annual-average CPI inflation, age structure, urban share, fertility, life expectancy and mortality, trade series, GNI per capita |
 | IMF (World Economic Outlook) | GDP (PPP) and GDP per capita (PPP) |
 | Ministry of Finance | APBN 2024 realisation: revenue, spending, deficit, primary deficit |
@@ -22,6 +23,40 @@ could not be verified to a named official source was omitted (see
 Every indicator row in the data explorer carries its own source and
 year. The full source list is also exported as `SOURCES` in
 `app/data.js`.
+
+## The three new provincial tables (round 3)
+
+All 38 provinces now carry three figures, each from one named BPS
+table, with one vintage per figure:
+
+1. **Population, mid-2024 (June).** BPS, Hasil Proyeksi Penduduk
+   Interim 2020–2023 — Tabel 2, "Jumlah dan Persentase Penduduk
+   Menurut Provinsi di Indonesia (000) Jiwa 2024" (as reproduced in
+   BPS Provinsi Jawa Barat, "Indikator Strategis Provinsi Jawa Barat
+   di Peringkat Nasional 2024"). Populations are kept at the 4
+   decimals BPS publishes (e.g. West Java 50.3452m). The 38 pops sum
+   to 281.604m, the BPS projection total.
+2. **Poverty rate, March 2024.** BPS, "Profil Kemiskinan Provinsi
+   Papua Maret 2024" (BRS No. 130/07/94/Th. XXVII, 1 Jul 2024),
+   Tabel 7, "Persentase Penduduk Miskin Menurut Provinsi, Maret
+   2024" (national 9.03%). No province field is null: all 38 rates
+   were verified to this table.
+3. **Unemployment rate, August 2024.** BPS, "Tingkat Pengangguran
+   Terbuka Menurut Provinsi (Persen)", Sakernas Agustus 2024
+   (national 4.91%, BRS No. 83/11/Th. XXVII, 5 Nov 2024). No
+   province field is null: all 38 rates were verified to this table.
+
+**Precision.** Poverty and unemployment are kept at the two decimals
+BPS publishes (e.g. Aceh poverty 14.23%, unemployment 5.75%);
+populations at four decimals. Ranks and legend breaks use the
+published precision; the map rounds to one decimal only for display.
+
+**The 99.35% share sum.** Province shares are computed as pop /
+283.488 (the World Bank national total, as in rounds 1–2), so they
+sum to 99.35%, not 100. The 0.65pp gap is the difference between the
+BPS provincial projection total (281.604m) and the World Bank
+national total (283.488m) — two different published totals, not a
+data error. The gap is stated in the data file's comments.
 
 ## Verification method
 
@@ -53,6 +88,9 @@ year. The full source list is also exported as `SOURCES` in
    to the BPS 2024 release (manufacturing 18.98%, trade 13.07%,
    agriculture 12.61%, construction 10.09%, mining 9.15%); Jakarta's
    mid-2024 population is 10.685m (the 11.1m figure is a 2025 value).
+   Two round-2 bugs were fixed in round 3: the People/Data controls
+   no longer double-bind their handlers, and the stylesheet now
+   includes the view classes round 2's CSS was missing.
 4. **Residuals labelled.** "Other (residual)" in sector shares (29.97%)
    and "All other (residual)" in employment (25.42%) are computed as
    100 minus the named shares and are labelled as residuals. The
@@ -75,7 +113,18 @@ year. The full source list is also exported as `SOURCES` in
   grouped.
 - **Provinces** are ranked by mid-2024 population (BPS); each bar
   shows both the headcount (millions) and the share of the national
-  population. The top 10 cover 71.7% of the population.
+  population. The People table lists all 38 provinces, sortable.
+- **Province map.** A tile-grid cartogram: one tile per province,
+  placed to roughly mirror Indonesia's geography (Sumatra on the
+  diagonal at top left, Java in a row below it, Kalimantan in the
+  centre, Sulawesi to its east, Maluku and Papua at the far east).
+  Tiles are coloured by the selected metric (population, poverty
+  rate, unemployment) on a 5-step colourblind-safe sequential scale;
+  the legend shows the real computed breaks for the selected metric
+  (quantile-ish breaks from the data, labelled with the metric unit).
+  Clicking or keyboard-activating a tile shows the province's three
+  values and its rank on the selected metric. Default metric is
+  population; default selected province is the largest (West Java).
 - **CPI groups** plot the December 2024 year-on-year rate per group
   with its contribution in percentage points; the contributions sum
   to the headline rate. Rates and contributions are different
@@ -106,28 +155,30 @@ year. The full source list is also exported as `SOURCES` in
 - **2024 average food prices (BPS):** the BPS publication exists but
   its table values were not extractable, so food prices use the
   dated Bank Indonesia PIHPS averages instead.
-- **Provincial populations beyond the top 10** were not needed for
-  the top-10 table and are not listed.
+- **No provincial figure is null in round 3.** All 38 poverty
+  (Mar 2024) and unemployment (Aug 2024) values were verified to the
+  named BPS tables above, so no province is shown as "n/a" on the
+  map. Had any figure failed verification it would have been left
+  null and rendered grey, not invented.
 
-## Round 2 changes
+## Round 3 changes
 
-- **New Province Compare route.** A dedicated page for comparing
-  provinces side by side on population and population share, built
-  from the same verified top-10 BPS table as round 1 — no new figures.
-- **Sorotan highlights strip.** A new strip on the home page showing
-  the five fastest-moving verified indicators (GDP growth, inflation,
-  unemployment, poverty, exports), each with both endpoints, the
-  change, and its source. Every highlight is computed only from
-  figures already in the verified data set.
-- **Upgraded data explorer.** The indicator explorer now covers all
-  66 verified rows across the five groups (Economy 22, People 20,
-  Prices 10, Trade 8, Health 6), with per-row source and year, and
-  the same group filter as round 1.
-- **Data refresh.** Series extended with the verified 2025 and 2026
-  releases where available: GDP 2025 (+5.11%, Rp 23,821.1tn), GDP
-  Q3 2026 (+5.47% yoy), unemployment August 2026 (4.75%), poverty
-  March 2026 (8.07%), October 2026 inflation (3.23% yoy), 2025 trade
-  (exports US$281.7bn, imports US$241.8bn), and Bank Indonesia PIHPS
-  food prices for September 2026. All other figures re-verified
-  against the 26 November 2026 notes; no figure was carried over
-  unverified.
+- **New Province Map route (`#/map`).** A tile-grid cartogram of all
+  38 provinces, colourable by population (BPS mid-2024), poverty rate
+  (BPS Mar 2024) or unemployment (BPS Sakernas Aug 2024), with a
+  5-step legend from real computed breaks and a detail panel showing
+  the selected province's three values plus its rank on the selected
+  metric. Tiles are keyboard-accessible.
+- **All 38 provinces everywhere.** The People page table lists all 38
+  provinces (sortable; was top 10). The Compare route works with the
+  full 38-province dataset.
+- **New province dataset.** Population (BPS mid-2024), poverty rate
+  (BPS Mar 2024) and unemployment (BPS Sakernas Aug 2024) for all 38
+  provinces — see "The three new provincial tables" above.
+- **Dashboard teaser.** A card on the dashboard links to the map
+  ("Explore all 38 provinces on the map").
+- **Bug fixes from round 2.** The People/Data controls no longer
+  double-bind their handlers, and the stylesheet now includes the
+  view classes round 2's CSS was missing.
+- **Screenshots.** The map shot replaces round 2's compare shot as
+  shot 2 (dashboard, map, data, phone).

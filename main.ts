@@ -1,4 +1,4 @@
-// NusaStat — entrypoint (round 2).
+// NusaStat — entrypoint (round 3).
 //
 // Copies the static site in app/ and the screenshots in screenshots/
 // into the output directory, then writes dossier.json from them with

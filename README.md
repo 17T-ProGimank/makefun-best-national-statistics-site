@@ -18,12 +18,18 @@ nothing on the site is estimated or invented: anything that could not be
 verified to a named official source was left out. See `methodology.md`
 for the verification method and the full source list.
 
+Round 3 adds a Province Map: a tile-grid cartogram of all 38 provinces,
+colourable by population (BPS mid-2024), poverty rate (BPS Mar 2024) or
+unemployment (BPS Sakernas Aug 2024), with a detail panel for the
+selected province. The People table now lists all 38 provinces.
+
 ## Routes
 
-- `#/` — Dashboard: headline indicators, GDP and inflation charts, provincial snapshot
+- `#/` — Dashboard: headline indicators, GDP and inflation charts, provincial snapshot, map teaser
 - `#/economy` — Economy: GDP, growth, sectors, trade, fiscal figures
-- `#/people` — People: population, age structure, employment, poverty, education
+- `#/people` — People: population, age structure, employment, poverty, education; all 38 provinces
 - `#/prices` — Prices: CPI, inflation by group, food prices
+- `#/map` — Province Map: tile cartogram of all 38 provinces, colour by population / poverty / unemployment
 - `#/compare` — Compare: pick any two provinces and compare them side by side
 - `#/data` — Data: searchable, sortable, filterable explorer of every indicator, with sources and CSV download
 
