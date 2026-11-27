@@ -9,6 +9,7 @@ import {
   TRADE_SERIES,
   SECTORS,
   PROVINCES,
+  PROVINCE_DETAIL,
   AGE_STRUCTURE,
   EMPLOYMENT,
   CPI_GROUPS,
@@ -19,7 +20,7 @@ import {
   HIGHLIGHTS,
   SOURCES
 } from "./data.js";
-import { lineChart, barChart, hbarChart, donutChart } from "./charts.js";
+import { lineChart, barChart, hbarChart, donutChart, buildTileMap, TILE_POS, TILE_COLORS, TILE_NULL_COLOR } from "./charts.js";
 
 function escapeHtml(value) {
   if (value === null || value === undefined) return "";
@@ -140,6 +141,9 @@ export function renderDashboard() {
     "<figure class=\"chart-card\"><figcaption>GDP growth, 2015–2025 (%) — Source: World Bank</figcaption>" + gdpChart + "</figure>" +
     "<figure class=\"chart-card\"><figcaption>Inflation, annual average, 2015–2025 (%) — Source: World Bank</figcaption>" + inflationChart + "</figure>" +
     "</div>" +
+    "<article class=\"card map-teaser\"><h2>Province Map</h2>" +
+    "<p>All 38 provinces on one tile map — colour it by population, poverty or unemployment, and click any province for its numbers.</p>" +
+    "<a class=\"btn\" href=\"#/map\">Explore all 38 provinces on the map</a></article>" +
     sectionHead("Latest releases", "What just landed") +
     "<ul class=\"release-list\">" + releases + "</ul>" +
     sectionHead("Key figures", "Headline numbers") +
@@ -203,12 +207,37 @@ export function renderEconomy() {
 
 const provinceSortState = { key: "pop", dir: -1 };
 
+// PROVINCES merged with PROVINCE_DETAIL, so the People table can show
+// poverty and unemployment next to population and share. Missing detail
+// rows stay null and render as "—", never as an invented figure.
+function peopleRows() {
+  const detailByName = {};
+  (Array.isArray(PROVINCE_DETAIL) ? PROVINCE_DETAIL : []).forEach(function (d) {
+    detailByName[d.name] = d;
+  });
+  return PROVINCES.map(function (p) {
+    const d = detailByName[p.name] || {};
+    return {
+      name: p.name,
+      pop: p.pop,
+      share: p.share,
+      poverty: d.poverty === undefined ? null : d.poverty,
+      unemployment: d.unemployment === undefined ? null : d.unemployment
+    };
+  });
+}
+
 export function sortProvinces(rows, key, dir) {
   const k = key || "pop";
   const d = dir === undefined || dir === null ? -1 : dir;
   return rows.slice().sort(function (a, b) {
     const av = a[k];
     const bv = b[k];
+    const aNull = av === null || av === undefined;
+    const bNull = bv === null || bv === undefined;
+    if (aNull && bNull) return 0;
+    if (aNull) return 1;
+    if (bNull) return -1;
     const an = Number(av);
     const bn = Number(bv);
     if (!Number.isNaN(an) && !Number.isNaN(bn)) return (an - bn) * d;
@@ -219,7 +248,9 @@ export function sortProvinces(rows, key, dir) {
 function provinceRows(rows) {
   return rows.map(function (p) {
     return "<tr><td>" + escapeHtml(p.name) + "</td><td>" + escapeHtml(fmtDec(p.pop, 2)) + "</td>" +
-      "<td>" + escapeHtml(fmtDec(p.share, 1)) + "%</td></tr>";
+      "<td>" + escapeHtml(fmtDec(p.share, 1)) + "%</td>" +
+      "<td>" + escapeHtml(fmtDec(p.poverty, 1)) + (p.poverty === null || p.poverty === undefined ? "" : "%") + "</td>" +
+      "<td>" + escapeHtml(fmtDec(p.unemployment, 1)) + (p.unemployment === null || p.unemployment === undefined ? "" : "%") + "</td></tr>";
   }).join("");
 }
 
@@ -227,7 +258,7 @@ function refreshProvinceTable() {
   if (typeof document === "undefined") return;
   const body = document.getElementById("province-body");
   if (!body) return;
-  const sorted = sortProvinces(PROVINCES.slice(0, 10), provinceSortState.key, provinceSortState.dir);
+  const sorted = sortProvinces(peopleRows(), provinceSortState.key, provinceSortState.dir);
   body.innerHTML = provinceRows(sorted);
   const heads = document.querySelectorAll("#province-table th.sortable");
   heads.forEach(function (th) {
@@ -250,7 +281,7 @@ function bindProvinceTable() {
 }
 
 export function renderPeople() {
-  const top10 = sortProvinces(PROVINCES.slice(0, 10), "pop", -1);
+  const all = sortProvinces(peopleRows(), "pop", -1);
   const ageChart = donutChart({
     width: 360, height: 360,
     items: AGE_STRUCTURE.map(function (a, i) {
@@ -284,12 +315,15 @@ export function renderPeople() {
   return "<section class=\"page people\">" +
     "<header class=\"page-head\"><h1>People</h1>" +
     "<p>Population " + escapeHtml(fmtDec(NATIONAL_POP, 3)) + " million (2024, World Bank). Click a column heading to sort the province table.</p></header>" +
-    sectionHead("Population by province", "Top 10 provinces — population in millions, share of Indonesia (%) — source: BPS, 2024") +
+    sectionHead("Population by province", "All 38 provinces — population in millions (BPS, mid-2024), poverty (BPS, Mar 2024), unemployment (BPS Sakernas, Aug 2024)") +
     "<div class=\"table-wrap\"><table class=\"data-table\" id=\"province-table\"><thead><tr>" +
     "<th class=\"sortable\" data-key=\"name\">Province</th>" +
     "<th class=\"sortable\" data-key=\"pop\">Population (m)</th>" +
     "<th class=\"sortable\" data-key=\"share\">Share of Indonesia</th>" +
-    "</tr></thead><tbody id=\"province-body\">" + provinceRows(top10) + "</tbody></table></div>" +
+    "<th class=\"sortable\" data-key=\"poverty\">Poverty (%)</th>" +
+    "<th class=\"sortable\" data-key=\"unemployment\">Unemployment (%)</th>" +
+    "</tr></thead><tbody id=\"province-body\">" + provinceRows(all) + "</tbody></table></div>" +
+    "<p class=\"page-note\">“—” means the figure was not published for that province and is omitted rather than estimated. See the Province Map for the same data as a tile map.</p>" +
     sectionHead("Age structure", "Share of population by age group (%) — source: BPS / World Bank, 2024") +
     "<figure class=\"chart-card\">" + ageChart + "</figure>" +
     sectionHead("Employment by sector", "Share of employment and workers — source: BPS, 2024") +
@@ -483,8 +517,14 @@ export function renderData() {
     "</section>";
 }
 
+// ---------- Compare (all 38 provinces) ----------
+
+function provincesByPopDesc() {
+  return PROVINCES.slice().sort(function (a, b) { return Number(b.pop) - Number(a.pop); });
+}
+
 function compareOptions(selectedName) {
-  return PROVINCES.slice(0, 10).map(function (p) {
+  return provincesByPopDesc().map(function (p) {
     return "<option value=\"" + escapeHtml(p.name) + "\"" + (p.name === selectedName ? " selected" : "") + ">" + escapeHtml(p.name) + "</option>";
   }).join("");
 }
@@ -492,14 +532,15 @@ function compareOptions(selectedName) {
 function findProvince(name, fallbackIndex) {
   const found = PROVINCES.find(function (p) { return p.name === name; });
   if (found) return found;
-  return PROVINCES[fallbackIndex] || PROVINCES[0];
+  return provincesByPopDesc()[fallbackIndex] || PROVINCES[0];
 }
 
 function renderCompareResult(aName, bName) {
   const a = findProvince(aName, 0);
   const b = findProvince(bName, 1);
-  const rankA = PROVINCES.indexOf(a) + 1;
-  const rankB = PROVINCES.indexOf(b) + 1;
+  const ranked = provincesByPopDesc();
+  const rankA = ranked.indexOf(a) + 1;
+  const rankB = ranked.indexOf(b) + 1;
   const aPctOfB = Number(b.pop) ? (Number(a.pop) / Number(b.pop)) * 100 : 0;
   const bPctOfA = Number(a.pop) ? (Number(b.pop) / Number(a.pop)) * 100 : 0;
   const twoChart = barChart({
@@ -507,11 +548,13 @@ function renderCompareResult(aName, bName) {
     labels: [a.name, b.name], values: [Number(a.pop), Number(b.pop)],
     color: "#2563eb", unit: "m"
   });
+  const top10 = ranked.slice(0, 10);
   const top10Chart = hbarChart({
     width: 760, height: 320,
-    items: PROVINCES.slice(0, 10).map(function (p) { return { label: p.name, value: p.share }; }),
+    items: top10.map(function (p) { return { label: p.name, value: p.share }; }),
     color: "#2563eb", unit: "%"
   });
+  const top10Share = top10.reduce(function (sum, p) { return sum + (Number(p.share) || 0); }, 0);
   const rows = [
     ["Population", fmtDec(a.pop, 2) + " million", fmtDec(b.pop, 2) + " million"],
     ["Share of Indonesia", fmtDec(a.share, 1) + "%", fmtDec(b.share, 1) + "%"],
@@ -526,7 +569,7 @@ function renderCompareResult(aName, bName) {
     "<figure class=\"chart-card\"><figcaption>Selected provinces highlighted</figcaption><p class=\"page-note\">Selected: <strong>" + escapeHtml(a.name) + "</strong> and <strong>" + escapeHtml(b.name) + "</strong> — shown in the two-province chart and named here; the chart below shows all top 10.</p></figure></div>" +
     "<figure class=\"chart-card\"><figcaption>Top 10 provinces by share of Indonesia (%) — source: BPS, 2024</figcaption>" + top10Chart + "</figure>" +
     "<p class=\"page-note\">Context: national population " + escapeHtml(fmtDec(NATIONAL_POP, 3)) + " million, 2024, World Bank. " +
-    "The top 10 provinces together hold 71.7% of Indonesia's population. Population figures: BPS, 2024.</p>";
+    "The top 10 provinces together hold " + escapeHtml(fmtDec(top10Share, 1)) + "% of Indonesia's population. Population figures: BPS, 2024.</p>";
 }
 
 export function bindCompare() {
@@ -548,11 +591,244 @@ export function renderCompare() {
   afterRender(bindCompare);
   return "<section class=\"page compare\">" +
     "<header class=\"page-head\"><h1>Province Compare</h1>" +
-    "<p>Pick two provinces and compare them side by side — population figures: BPS, 2024.</p></header>" +
+    "<p>Pick two provinces and compare them side by side — all 38 provinces available. Population figures: BPS, 2024.</p></header>" +
     "<div class=\"compare-controls\">" +
     "<label>Province A <select id=\"compare-a\">" + compareOptions(defaultA) + "</select></label>" +
     "<label>Province B <select id=\"compare-b\">" + compareOptions(defaultB) + "</select></label>" +
     "</div>" +
     "<div id=\"compare-result\">" + renderCompareResult(defaultA, defaultB) + "</div>" +
+    "</section>";
+}
+
+// ---------- Province Map (round 3) ----------
+
+// Short tile labels (full names live in aria-labels and the detail panel).
+const SHORT_LABELS = {
+  "Aceh": "Aceh",
+  "North Sumatra": "Sumut",
+  "West Sumatra": "Sumbar",
+  "Riau": "Riau",
+  "Jambi": "Jambi",
+  "South Sumatra": "Sumsel",
+  "Bengkulu": "Bengkulu",
+  "Lampung": "Lampung",
+  "Bangka Belitung Islands": "Babel",
+  "Riau Islands": "Kepri",
+  "Jakarta": "Jakarta",
+  "West Java": "Jabar",
+  "Central Java": "Jateng",
+  "Yogyakarta": "DIY",
+  "East Java": "Jatim",
+  "Banten": "Banten",
+  "Bali": "Bali",
+  "West Nusa Tenggara": "NTB",
+  "East Nusa Tenggara": "NTT",
+  "West Kalimantan": "Kalbar",
+  "Central Kalimantan": "Kalteng",
+  "South Kalimantan": "Kalsel",
+  "East Kalimantan": "Kaltim",
+  "North Kalimantan": "Kaltara",
+  "North Sulawesi": "Sulut",
+  "Central Sulawesi": "Sulteng",
+  "South Sulawesi": "Sulsel",
+  "Southeast Sulawesi": "Sultra",
+  "Gorontalo": "Gorontalo",
+  "West Sulawesi": "Sulbar",
+  "Maluku": "Maluku",
+  "North Maluku": "Malut",
+  "West Papua": "Papua Barat",
+  "Southwest Papua": "Papua BD",
+  "Papua": "Papua",
+  "Central Papua": "Papua Tengah",
+  "Highland Papua": "Papua Peg.",
+  "South Papua": "Papua Selatan"
+};
+
+const MAP_METRICS = {
+  pop: { label: "Population", unit: "m", sourceNote: "BPS, mid-2024" },
+  poverty: { label: "Poverty rate", unit: "%", sourceNote: "BPS, Mar 2024" },
+  unemployment: { label: "Unemployment", unit: "%", sourceNote: "BPS Sakernas, Aug 2024" }
+};
+
+const mapState = { metric: "pop", selected: null };
+
+function mapDetails() {
+  return Array.isArray(PROVINCE_DETAIL) ? PROVINCE_DETAIL : [];
+}
+
+function mapMetricValue(detail, key) {
+  if (!detail) return null;
+  const v = detail[key];
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+// Quintile breaks: the 20/40/60/80% cut points of the ranked values.
+function computeBreaks(values) {
+  const sorted = values.slice().sort(function (a, b) { return a - b; });
+  if (sorted.length < 2) return sorted;
+  const breaks = [];
+  [0.2, 0.4, 0.6, 0.8].forEach(function (q) {
+    const idx = Math.min(sorted.length - 1, Math.floor(sorted.length * q));
+    breaks.push(sorted[idx]);
+  });
+  return breaks;
+}
+
+function formatBreak(value, metric) {
+  if (metric.unit === "%") return fmtDec(value, 1) + "%";
+  return fmtDec(value, 1) + "m";
+}
+
+function mapLegendHtml(breaks, metric, hasNulls) {
+  const steps = [];
+  for (let i = 0; i < TILE_COLORS.length; i++) {
+    let range;
+    if (i === 0) range = "≤ " + formatBreak(breaks[0], metric);
+    else if (i === TILE_COLORS.length - 1) range = "> " + formatBreak(breaks[breaks.length - 1], metric);
+    else range = formatBreak(breaks[i - 1], metric) + " – " + formatBreak(breaks[i], metric);
+    steps.push("<span class=\"legend-item\"><span class=\"swatch\" style=\"background:" + TILE_COLORS[i] + "\"></span>" + escapeHtml(range) + "</span>");
+  }
+  if (hasNulls) {
+    steps.push("<span class=\"legend-item\"><span class=\"swatch\" style=\"background:" + TILE_NULL_COLOR + "\"></span>No data</span>");
+  }
+  return "<p class=\"map-legend-title\">" + escapeHtml(metric.label) + " — " + escapeHtml(metric.sourceNote) + "</p>" +
+    "<div class=\"map-legend\">" + steps.join("") + "</div>";
+}
+
+function mapRank(name, key) {
+  const ranked = mapDetails()
+    .map(function (d) { return { name: d.name, value: mapMetricValue(d, key) }; })
+    .filter(function (d) { return d.value !== null; })
+    .sort(function (a, b) { return b.value - a.value; });
+  const idx = ranked.findIndex(function (d) { return d.name === name; });
+  if (idx < 0) return null;
+  return { rank: idx + 1, of: ranked.length };
+}
+
+function mapDetailHtml() {
+  const detail = mapDetails().find(function (d) { return d.name === mapState.selected; });
+  const metric = MAP_METRICS[mapState.metric];
+  if (!detail) {
+    return "<h2>No province selected</h2><p>Click a tile on the map to see its numbers.</p>";
+  }
+  const province = PROVINCES.find(function (p) { return p.name === detail.name; });
+  const pop = mapMetricValue(detail, "pop");
+  const poverty = mapMetricValue(detail, "poverty");
+  const unemployment = mapMetricValue(detail, "unemployment");
+  const rank = mapRank(detail.name, mapState.metric);
+  const rankLine = rank
+    ? "<p class=\"map-detail-rank\">" + escapeHtml(metric.label) + " rank <strong>" + rank.rank + " of " + rank.of + "</strong></p>"
+    : "<p class=\"map-detail-rank\">No " + escapeHtml(metric.label.toLowerCase()) + " data for this province.</p>";
+  return "<h2>" + escapeHtml(detail.name) + "</h2>" +
+    rankLine +
+    "<dl class=\"detail-list\">" +
+    "<dt>Population</dt><dd>" + (pop === null ? "—" : escapeHtml(fmtDec(pop, 1)) + " million") + "</dd>" +
+    "<dt>Share of Indonesia</dt><dd>" + (province ? escapeHtml(fmtDec(province.share, 1)) + "%" : "—") + "</dd>" +
+    "<dt>Poverty rate</dt><dd>" + (poverty === null ? "—" : escapeHtml(fmtDec(poverty, 1)) + "%") + "</dd>" +
+    "<dt>Unemployment</dt><dd>" + (unemployment === null ? "—" : escapeHtml(fmtDec(unemployment, 1)) + "%") + "</dd>" +
+    "</dl>" +
+    "<p class=\"map-detail-source\">Population: BPS, mid-2024. Poverty: BPS, Mar 2024. Unemployment: BPS Sakernas, Aug 2024.</p>";
+}
+
+// Builds the three dynamic regions of the map page (SVG, legend, detail).
+// Used both by renderMap (first paint) and by refreshMap (interactions).
+function mapRegionsHtml() {
+  const metric = MAP_METRICS[mapState.metric];
+  const details = mapDetails();
+  if (mapState.selected === null) {
+    const byPop = details
+      .map(function (d) { return { name: d.name, value: mapMetricValue(d, "pop") }; })
+      .filter(function (d) { return d.value !== null; })
+      .sort(function (a, b) { return b.value - a.value; });
+    if (byPop.length) mapState.selected = byPop[0].name;
+  }
+  const tiles = details
+    .filter(function (d) { return Object.prototype.hasOwnProperty.call(TILE_POS, d.name); })
+    .map(function (d) {
+      const pos = TILE_POS[d.name];
+      return {
+        name: d.name,
+        value: mapMetricValue(d, mapState.metric),
+        col: pos.col,
+        row: pos.row,
+        label: SHORT_LABELS[d.name] || d.name
+      };
+    });
+  const values = tiles.map(function (t) { return t.value; }).filter(function (v) { return v !== null; });
+  const hasNulls = tiles.some(function (t) { return t.value === null; });
+  const breaks = computeBreaks(values);
+  return {
+    svg: buildTileMap(tiles, { breaks: breaks, selectedName: mapState.selected }),
+    legend: mapLegendHtml(breaks, metric, hasNulls),
+    detail: mapDetailHtml()
+  };
+}
+
+function refreshMap(restoreFocus) {
+  if (typeof document === "undefined") return;
+  const regions = mapRegionsHtml();
+  const svgWrap = document.getElementById("map-svg");
+  const legendWrap = document.getElementById("map-legend");
+  const detailWrap = document.getElementById("map-detail");
+  if (svgWrap) svgWrap.innerHTML = regions.svg;
+  if (legendWrap) legendWrap.innerHTML = regions.legend;
+  if (detailWrap) detailWrap.innerHTML = regions.detail;
+  document.querySelectorAll(".metric-switcher [data-metric]").forEach(function (btn) {
+    btn.setAttribute("aria-pressed", btn.getAttribute("data-metric") === mapState.metric ? "true" : "false");
+  });
+  if (restoreFocus && mapState.selected) {
+    const tile = document.querySelector('.map-tile[data-name="' + mapState.selected.replace(/"/g, "") + '"]');
+    if (tile && typeof tile.focus === "function") tile.focus();
+  }
+}
+
+export function bindMap() {
+  if (typeof document === "undefined") return;
+  const switcher = document.querySelector(".metric-switcher");
+  if (switcher) {
+    switcher.addEventListener("click", function (event) {
+      const btn = event.target.closest("[data-metric]");
+      if (!btn) return;
+      mapState.metric = btn.getAttribute("data-metric");
+      refreshMap(false);
+    });
+  }
+  const svgWrap = document.getElementById("map-svg");
+  if (svgWrap) {
+    svgWrap.addEventListener("click", function (event) {
+      const tile = event.target.closest(".map-tile");
+      if (!tile) return;
+      mapState.selected = tile.getAttribute("data-name");
+      refreshMap(false);
+    });
+    svgWrap.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const tile = event.target.closest(".map-tile");
+      if (!tile) return;
+      event.preventDefault();
+      mapState.selected = tile.getAttribute("data-name");
+      refreshMap(true);
+    });
+  }
+}
+
+export function renderMap() {
+  const regions = mapRegionsHtml();
+  const switcher = Object.keys(MAP_METRICS).map(function (key) {
+    const m = MAP_METRICS[key];
+    return "<button type=\"button\" class=\"metric-btn\" data-metric=\"" + key + "\" aria-pressed=\"" + (key === mapState.metric ? "true" : "false") + "\">" + escapeHtml(m.label) + "</button>";
+  }).join("");
+  return "<section class=\"page map\">" +
+    "<header class=\"page-head\"><h1>Province Map</h1>" +
+    "<p>All 38 provinces on one tile map. Pick a metric to colour the tiles, then click a province — or tab to it and press Enter — to see its numbers.</p></header>" +
+    "<div class=\"metric-switcher\" role=\"group\" aria-label=\"Colour the map by\">" + switcher + "</div>" +
+    "<div class=\"map-layout\">" +
+    "<div class=\"card map-card\"><div id=\"map-svg\">" + regions.svg + "</div>" +
+    "<div id=\"map-legend\">" + regions.legend + "</div></div>" +
+    "<aside class=\"card map-detail\" id=\"map-detail\" aria-live=\"polite\">" + regions.detail + "</aside>" +
+    "</div>" +
+    "<p class=\"page-note\">Each tile is one province, placed to roughly mirror Indonesia's geography: Sumatra on the diagonal at top left, Java in a row below it, Kalimantan in the centre, Sulawesi to its east, Maluku and Papua at the far east. Darker tiles mean a higher value on the selected metric. Population: BPS, mid-2024. Poverty: BPS, Mar 2024. Unemployment: BPS Sakernas, Aug 2024.</p>" +
     "</section>";
 }

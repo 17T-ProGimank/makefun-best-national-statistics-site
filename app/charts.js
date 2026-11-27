@@ -218,3 +218,141 @@ export function donutChart({ width = 640, height = 300, items = [], unit = "" } 
   s += "</svg>";
   return s;
 }
+
+// ---------- Province tile map (round 3) ----------
+
+// Colourblind-safe sequential palette, light (lowest) to dark (highest).
+export const TILE_COLORS = ["#e3f0ee", "#a9d6ce", "#6bb7a9", "#1f7a6d", "#07463e"];
+export const TILE_NULL_COLOR = "#d7dee0";
+
+// Tile-grid cartogram of Indonesia: each province is one tile, arranged
+// to roughly mirror the country's geography — Sumatra on a NW–SE
+// diagonal at the top left, the Java row below it, Kalimantan in the
+// centre, Sulawesi to its east, and Maluku / Papua at the far east.
+// Columns 1–14, rows 1–7, 1-based.
+export const TILE_POS = {
+  "Aceh": { col: 1, row: 1 },
+  "North Sumatra": { col: 2, row: 2 },
+  "West Sumatra": { col: 2, row: 3 },
+  "Riau": { col: 3, row: 3 },
+  "Riau Islands": { col: 4, row: 3 },
+  "Jambi": { col: 3, row: 4 },
+  "South Sumatra": { col: 4, row: 4 },
+  "Bengkulu": { col: 3, row: 5 },
+  "Lampung": { col: 4, row: 5 },
+  "Bangka Belitung Islands": { col: 5, row: 4 },
+  "Jakarta": { col: 6, row: 6 },
+  "West Java": { col: 7, row: 6 },
+  "Central Java": { col: 8, row: 6 },
+  "Yogyakarta": { col: 9, row: 6 },
+  "East Java": { col: 10, row: 6 },
+  "Banten": { col: 5, row: 6 },
+  "Bali": { col: 11, row: 6 },
+  "West Nusa Tenggara": { col: 12, row: 6 },
+  "East Nusa Tenggara": { col: 13, row: 6 },
+  "West Kalimantan": { col: 7, row: 2 },
+  "Central Kalimantan": { col: 8, row: 2 },
+  "South Kalimantan": { col: 8, row: 3 },
+  "East Kalimantan": { col: 9, row: 2 },
+  "North Kalimantan": { col: 8, row: 1 },
+  "North Sulawesi": { col: 10, row: 1 },
+  "Central Sulawesi": { col: 9, row: 3 },
+  "South Sulawesi": { col: 10, row: 5 },
+  "Southeast Sulawesi": { col: 11, row: 5 },
+  "Gorontalo": { col: 10, row: 2 },
+  "West Sulawesi": { col: 9, row: 4 },
+  "Maluku": { col: 11, row: 3 },
+  "North Maluku": { col: 12, row: 1 },
+  "West Papua": { col: 13, row: 2 },
+  "Southwest Papua": { col: 12, row: 4 },
+  "Papua": { col: 13, row: 3 },
+  "Central Papua": { col: 13, row: 4 },
+  "Highland Papua": { col: 13, row: 5 },
+  "South Papua": { col: 13, row: 7 }
+};
+
+// Split a short tile label into at most two lines of at most 9 characters
+// each, so it fits inside one tile. A single long word stays whole.
+function wrapLabel(label) {
+  const words = String(label || "").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = "";
+  for (const word of words) {
+    const next = current ? current + " " + word : word;
+    if (next.length <= 9) {
+      current = next;
+    } else if (!current) {
+      current = word;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  }
+  if (current) lines.push(current);
+  if (lines.length > 2) {
+    const first = lines[0];
+    const rest = lines.slice(1).join(" ");
+    lines.length = 0;
+    lines.push(first, rest.length > 9 ? rest.slice(0, 8) + "…" : rest);
+  }
+  return lines;
+}
+
+// Tile-grid cartogram. tiles = [{ name, value, col, row, label }].
+// opts: { colors, breaks, selectedName, nullColor, width, height }.
+// breaks = 4 ascending cut points giving 5 colour steps; a null value
+// renders grey. Each tile is a focusable group with role="button" so it
+// works with keyboard as well as mouse. Returns an SVG string.
+export function buildTileMap(tiles, opts = {}) {
+  const width = opts.width || 800;
+  const height = opts.height || 352;
+  const colors = opts.colors || TILE_COLORS;
+  const breaks = (opts.breaks || []).slice().sort((a, b) => a - b);
+  const selectedName = opts.selectedName || null;
+  const nullColor = opts.nullColor || TILE_NULL_COLOR;
+  const cols = 14;
+  const rows = 7;
+  const gap = 4;
+  const tileW = (width - gap * (cols - 1)) / cols;
+  const tileH = (height - gap * (rows - 1)) / rows;
+  const title = "Tile map of Indonesia: " + tiles.map((t) => {
+    const v = t.value === null || t.value === undefined ? "no data" : fmtNum(t.value);
+    return t.name + " " + v;
+  }).join(", ");
+  let s = svgOpen(width, height, title);
+  for (const t of tiles) {
+    const pos = TILE_POS[t.name] || { col: t.col || 1, row: t.row || 1 };
+    const x = (pos.col - 1) * (tileW + gap);
+    const y = (pos.row - 1) * (tileH + gap);
+    const cx = x + tileW / 2;
+    const cy = y + tileH / 2;
+    const v = t.value === null || t.value === undefined ? null : Number(t.value);
+    let fill;
+    let step = -1;
+    if (v === null || Number.isNaN(v)) {
+      fill = nullColor;
+    } else {
+      step = 0;
+      for (const b of breaks) if (v > b) step += 1;
+      step = Math.min(step, colors.length - 1);
+      fill = colors[step];
+    }
+    const textFill = step === -1 ? "#45524f" : step <= 2 ? "#07332f" : "#ffffff";
+    const valueText = v === null || Number.isNaN(v) ? "no data" : fmtNum(v);
+    const label = t.label || t.name;
+    const lines = wrapLabel(label);
+    const isSelected = selectedName !== null && t.name === selectedName;
+    s += '<g class="map-tile' + (isSelected ? " selected" : "") + '" tabindex="0" role="button" data-name="' + esc(t.name) + '" aria-label="' + esc(t.name) + ": " + esc(valueText) + '">' +
+      '<title>' + esc(t.name) + ": " + esc(valueText) + "</title>" +
+      '<rect class="tile-bg" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + tileW.toFixed(1) + '" height="' + tileH.toFixed(1) + '" rx="5" fill="' + esc(fill) + '"/>';
+    if (lines.length === 1) {
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (cy + 3.5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + textFill + '">' + esc(lines[0]) + "</text>";
+    } else {
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (cy - 5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + textFill + '">' + esc(lines[0]) + "</text>";
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (cy + 8).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + textFill + '">' + esc(lines[1]) + "</text>";
+    }
+    s += "</g>";
+  }
+  s += "</svg>";
+  return s;
+}

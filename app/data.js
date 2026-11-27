@@ -1,12 +1,15 @@
-// NusaStat — Indonesia in Numbers (Round 2 data layer)
+// NusaStat — Indonesia in Numbers (Round 3 data layer)
 // ------------------------------------------------------
 // Sources: BPS (Statistics Indonesia), World Bank (WDI / WITS),
 // IMF (World Economic Outlook), Ministry of Finance, Bank Indonesia,
 // UNCTAD, UN World Population Prospects, CIA World Factbook.
 // Every figure verified 26 Nov 2026 against the verified-data notes
-// (best-national-statistics-site-verified-data.md). Nothing here is
-// estimated or invented: figures that could not be verified were
-// omitted (no HDI, no Education-group indicators, no CPI weights).
+// (best-national-statistics-site-verified-data.md), and the 38-province
+// dataset verified 28 Nov 2026 against the BPS tables named below.
+// Nothing here is estimated or invented: figures that could not be
+// verified were omitted (no HDI, no Education-group indicators,
+// no CPI weights). No province field is null: all 38 poverty and
+// unemployment figures were verified to a named BPS table.
 // Two 2024 inflation concepts are kept apart on purpose: the KPI uses
 // the BPS December year-on-year rate (1.57%); INFLATION_SERIES uses
 // the World Bank annual-average series and is labelled as such.
@@ -107,18 +110,107 @@ export const SECTORS = [
   { name: "Other (residual)", share: 29.97 },
 ]; // BPS, share of GDP 2024, %; residual = 100 minus named shares
 
+// All 38 provinces, sorted by population descending.
+// Population: BPS, mid-2024 (June), Hasil Proyeksi Penduduk Interim
+// 2020-2023 — Tabel 2, "Jumlah dan Persentase Penduduk Menurut Provinsi
+// di Indonesia (000) Jiwa 2024", in BPS Provinsi Jawa Barat,
+// "Indikator Strategis Provinsi Jawa Barat di Peringkat Nasional 2024".
+// The 38 pops sum to 281.604m, the BPS projection total; share is
+// pop / 283.488 (World Bank national total, as in round 2), so the
+// shares sum to 99.35%, not 100 — the 0.65pp gap is the difference
+// between the two national totals, not a data error.
 export const PROVINCES = [
-  { name: "West Java", pop: 50.345, share: 17.76 },
-  { name: "East Java", pop: 41.815, share: 14.75 },
-  { name: "Central Java", pop: 37.892, share: 13.37 },
-  { name: "North Sumatra", pop: 15.589, share: 5.5 },
-  { name: "Banten", pop: 12.431, share: 4.39 },
-  { name: "Jakarta", pop: 10.685, share: 3.77 },
-  { name: "South Sulawesi", pop: 9.463, share: 3.34 },
-  { name: "Lampung", pop: 9.42, share: 3.32 },
-  { name: "South Sumatra", pop: 8.837, share: 3.12 },
-  { name: "Riau", pop: 6.728, share: 2.37 },
-]; // Top 10, mid-2024, BPS; pop in millions, share of national population %
+  { name: "West Java", pop: 50.3452, share: 17.76 },
+  { name: "East Java", pop: 41.8145, share: 14.75 },
+  { name: "Central Java", pop: 37.8923, share: 13.37 },
+  { name: "North Sumatra", pop: 15.5885, share: 5.5 },
+  { name: "Banten", pop: 12.4314, share: 4.39 },
+  { name: "Jakarta", pop: 10.6849, share: 3.77 },
+  { name: "South Sulawesi", pop: 9.4634, share: 3.34 },
+  { name: "Lampung", pop: 9.4196, share: 3.32 },
+  { name: "South Sumatra", pop: 8.8373, share: 3.12 },
+  { name: "Riau", pop: 6.7281, share: 2.37 },
+  { name: "West Sumatra", pop: 5.8362, share: 2.06 },
+  { name: "West Kalimantan", pop: 5.6955, share: 2.01 },
+  { name: "East Nusa Tenggara", pop: 5.656, share: 2.0 },
+  { name: "West Nusa Tenggara", pop: 5.646, share: 1.99 },
+  { name: "Aceh", pop: 5.5548, share: 1.96 },
+  { name: "Bali", pop: 4.4333, share: 1.56 },
+  { name: "South Kalimantan", pop: 4.2734, share: 1.51 },
+  { name: "East Kalimantan", pop: 4.0459, share: 1.43 },
+  { name: "Yogyakarta", pop: 3.7595, share: 1.33 },
+  { name: "Jambi", pop: 3.7243, share: 1.31 },
+  { name: "Central Sulawesi", pop: 3.1218, share: 1.1 },
+  { name: "Central Kalimantan", pop: 2.8097, share: 0.99 },
+  { name: "Southeast Sulawesi", pop: 2.7931, share: 0.99 },
+  { name: "North Sulawesi", pop: 2.7018, share: 0.95 },
+  { name: "Riau Islands", pop: 2.1833, share: 0.77 },
+  { name: "Bengkulu", pop: 2.1122, share: 0.75 },
+  { name: "Maluku", pop: 1.9456, share: 0.69 },
+  { name: "Bangka Belitung Islands", pop: 1.5315, share: 0.54 },
+  { name: "West Sulawesi", pop: 1.5032, share: 0.53 },
+  { name: "Central Papua", pop: 1.4729, share: 0.52 },
+  { name: "Highland Papua", pop: 1.467, share: 0.52 },
+  { name: "North Maluku", pop: 1.3556, share: 0.48 },
+  { name: "Gorontalo", pop: 1.2278, share: 0.43 },
+  { name: "Papua", pop: 1.0606, share: 0.37 },
+  { name: "North Kalimantan", pop: 0.7398, share: 0.26 },
+  { name: "Southwest Papua", pop: 0.6271, share: 0.22 },
+  { name: "West Papua", pop: 0.5787, share: 0.2 },
+  { name: "South Papua", pop: 0.5421, share: 0.19 },
+]; // All 38 provinces, mid-2024, BPS; pop in millions, share of national population %
+
+// Per-province detail for the map route, in geographic order
+// (west to east, as in the interface contract).
+// pop: millions, BPS mid-2024 (same table as PROVINCES above).
+// poverty: % — BPS, "Profil Kemiskinan Provinsi Papua Maret 2024"
+// (BRS No. 130/07/94/Th. XXVII, 1 Jul 2024), Tabel 7, "Persentase
+// Penduduk Miskin Menurut Provinsi, Maret 2024" (national 9.03%).
+// unemployment: % — BPS, "Tingkat Pengangguran Terbuka Menurut
+// Provinsi (Persen)", Sakernas Agustus 2024 (national 4.91%,
+// BRS No. 83/11/Th. XXVII, 5 Nov 2024).
+// Rates are kept at the two decimals BPS publishes, so ranks and
+// legend breaks use the published precision.
+export const PROVINCE_DETAIL = [
+  { name: "Aceh", pop: 5.5548, poverty: 14.23, unemployment: 5.75 },
+  { name: "North Sumatra", pop: 15.5885, poverty: 7.99, unemployment: 5.6 },
+  { name: "West Sumatra", pop: 5.8362, poverty: 5.97, unemployment: 5.75 },
+  { name: "Riau", pop: 6.7281, poverty: 6.67, unemployment: 3.7 },
+  { name: "Jambi", pop: 3.7243, poverty: 7.1, unemployment: 4.48 },
+  { name: "South Sumatra", pop: 8.8373, poverty: 10.97, unemployment: 3.86 },
+  { name: "Bengkulu", pop: 2.1122, poverty: 13.56, unemployment: 3.11 },
+  { name: "Lampung", pop: 9.4196, poverty: 10.69, unemployment: 4.19 },
+  { name: "Bangka Belitung Islands", pop: 1.5315, poverty: 4.55, unemployment: 4.63 },
+  { name: "Riau Islands", pop: 2.1833, poverty: 5.37, unemployment: 6.39 },
+  { name: "Jakarta", pop: 10.6849, poverty: 4.3, unemployment: 6.21 },
+  { name: "West Java", pop: 50.3452, poverty: 7.46, unemployment: 6.75 },
+  { name: "Central Java", pop: 37.8923, poverty: 10.47, unemployment: 4.78 },
+  { name: "Yogyakarta", pop: 3.7595, poverty: 10.83, unemployment: 3.48 },
+  { name: "East Java", pop: 41.8145, poverty: 9.79, unemployment: 4.19 },
+  { name: "Banten", pop: 12.4314, poverty: 5.84, unemployment: 6.68 },
+  { name: "Bali", pop: 4.4333, poverty: 4.0, unemployment: 1.79 },
+  { name: "West Nusa Tenggara", pop: 5.646, poverty: 12.91, unemployment: 2.73 },
+  { name: "East Nusa Tenggara", pop: 5.656, poverty: 19.48, unemployment: 3.02 },
+  { name: "West Kalimantan", pop: 5.6955, poverty: 6.32, unemployment: 4.86 },
+  { name: "Central Kalimantan", pop: 2.8097, poverty: 5.17, unemployment: 4.01 },
+  { name: "South Kalimantan", pop: 4.2734, poverty: 4.11, unemployment: 4.2 },
+  { name: "East Kalimantan", pop: 4.0459, poverty: 5.78, unemployment: 5.14 },
+  { name: "North Kalimantan", pop: 0.7398, poverty: 6.32, unemployment: 3.9 },
+  { name: "North Sulawesi", pop: 2.7018, poverty: 7.25, unemployment: 5.85 },
+  { name: "Central Sulawesi", pop: 3.1218, poverty: 11.77, unemployment: 2.94 },
+  { name: "South Sulawesi", pop: 9.4634, poverty: 8.06, unemployment: 4.19 },
+  { name: "Southeast Sulawesi", pop: 2.7931, poverty: 11.21, unemployment: 3.09 },
+  { name: "Gorontalo", pop: 1.2278, poverty: 14.57, unemployment: 3.13 },
+  { name: "West Sulawesi", pop: 1.5032, poverty: 11.21, unemployment: 2.68 },
+  { name: "Maluku", pop: 1.9456, poverty: 16.05, unemployment: 6.11 },
+  { name: "North Maluku", pop: 1.3556, poverty: 6.32, unemployment: 4.03 },
+  { name: "West Papua", pop: 0.5787, poverty: 21.66, unemployment: 4.13 },
+  { name: "Southwest Papua", pop: 0.6271, poverty: 18.13, unemployment: 6.48 },
+  { name: "Papua", pop: 1.0606, poverty: 17.26, unemployment: 6.48 },
+  { name: "South Papua", pop: 0.5421, poverty: 17.44, unemployment: 4.05 },
+  { name: "Central Papua", pop: 1.4729, poverty: 29.76, unemployment: 2.75 },
+  { name: "Highland Papua", pop: 1.467, poverty: 32.97, unemployment: 1.32 },
+];
 
 export const AGE_STRUCTURE = [
   { label: "0–14 years", pct: 24.6 },

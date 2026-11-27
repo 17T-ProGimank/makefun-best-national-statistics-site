@@ -1,5 +1,10 @@
 // NusaStat — hash router. Imports the view renderers from views.js and
 // wires page-specific controls after each render.
+//
+// Note: the People table and the Data explorer bind their own controls
+// from views.js (afterRender), so this router only binds the routes
+// whose controls live nowhere else (compare, map). Binding them here
+// as well would attach each handler twice and toggle every sort twice.
 import {
   renderDashboard,
   renderEconomy,
@@ -7,12 +12,9 @@ import {
   renderPrices,
   renderData,
   renderCompare,
-  refreshExplorer,
-  setExplorerState,
-  getExplorerState,
-  downloadExplorerCsv,
-  sortProvinces,
-  bindCompare
+  renderMap,
+  bindCompare,
+  bindMap
 } from "./views.js";
 
 const app = document.getElementById("app");
@@ -24,7 +26,8 @@ const TITLES = {
   people: "People — NusaStat | Indonesia in Numbers",
   prices: "Prices — NusaStat | Indonesia in Numbers",
   data: "Data — NusaStat | Indonesia in Numbers",
-  compare: "Compare Provinces — NusaStat | Indonesia in Numbers"
+  compare: "Compare Provinces — NusaStat | Indonesia in Numbers",
+  map: "Province Map — NusaStat | Indonesia in Numbers"
 };
 
 const RENDERERS = {
@@ -33,7 +36,8 @@ const RENDERERS = {
   people: renderPeople,
   prices: renderPrices,
   data: renderData,
-  compare: renderCompare
+  compare: renderCompare,
+  map: renderMap
 };
 
 function parseRoute() {
@@ -48,80 +52,14 @@ function parseRoute() {
   return "";
 }
 
-function sortKeyOf(th) {
-  return (
-    th.dataset.key ||
-    th.dataset.sortKey ||
-    th.dataset.sort ||
-    th.getAttribute("data-key") ||
-    th.getAttribute("data-sort-key") ||
-    ""
-  );
-}
-
 function bindPage(route) {
-  if (route === "people") {
-    app.querySelectorAll("th.sortable").forEach((th) => {
-      const activate = () => {
-        const key = sortKeyOf(th);
-        if (key) sortProvinces(key);
-      };
-      th.addEventListener("click", activate);
-      th.setAttribute("tabindex", "0");
-      th.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          activate();
-        }
-      });
-    });
-    return;
-  }
-
-  if (route === "data") {
-    const search = document.getElementById("explorer-search");
-    if (search) {
-      search.addEventListener("input", (event) => {
-        setExplorerState({ search: event.target.value });
-        refreshExplorer();
-      });
-    }
-    const group = document.getElementById("explorer-group");
-    if (group) {
-      group.addEventListener("change", (event) => {
-        setExplorerState({ group: event.target.value });
-        refreshExplorer();
-      });
-    }
-    const csv = document.getElementById("explorer-csv");
-    if (csv) {
-      csv.addEventListener("click", () => downloadExplorerCsv());
-    }
-    app.querySelectorAll("th.sortable").forEach((th) => {
-      const activate = () => {
-        const key = sortKeyOf(th);
-        if (!key) return;
-        const state = getExplorerState() || {};
-        const curKey = state.sortKey ?? state.key;
-        const curDir = state.sortDir ?? state.dir ?? state.direction ?? "asc";
-        const nextDir = curKey === key ? (curDir === "asc" ? "desc" : "asc") : "asc";
-        setExplorerState({ sortKey: key, sortDir: nextDir, key, dir: nextDir });
-        refreshExplorer();
-      };
-      th.addEventListener("click", activate);
-      th.setAttribute("tabindex", "0");
-      th.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          activate();
-        }
-      });
-    });
-    return;
-  }
-
   if (route === "compare") {
     bindCompare();
+    return;
+  }
+
+  if (route === "map") {
+    bindMap();
   }
 }
 
