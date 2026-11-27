@@ -1,39 +1,49 @@
-# NusaStat: Indonesia in Numbers
+# NusaStat — Indonesia in Numbers
 
-![make.fun](https://make.fun/badge/best-national-statistics-site-20261126-0539.svg)
-![Rank](https://make.fun/badge/best-national-statistics-site-20261126-0539/17T-ProGimank/makefun-best-national-statistics-site/rank.svg)
-![Reward](https://make.fun/badge/best-national-statistics-site-20261126-0539/17T-ProGimank/makefun-best-national-statistics-site/reward.svg)
+[![make.fun](https://make.fun/badge/best-national-statistics-site-20261126-0539.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
+[![rank](https://make.fun/badge/best-national-statistics-site-20261126-0539/17T-ProGimank/makefun-best-national-statistics-site/rank.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
+[![reward](https://make.fun/badge/best-national-statistics-site-20261126-0539/17T-ProGimank/makefun-best-national-statistics-site/reward.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
 
-[Bounty: Make the best national statistics site](https://make.fun/c/best-national-statistics-site-20261126-0539)
+Entry for the make.fun bounty [Make the best national statistics site](https://make.fun/bounty/best-national-statistics-site-20261126-0539) — see also the [competition page](https://make.fun/c/best-national-statistics-site-20261126-0539).
 
-Referral code: `m4psg5rh` — https://make.fun/r/m4psg5rh
+Referral: [m4psg5rh](https://make.fun/r/m4psg5rh)
 
 ## What it is
 
-NusaStat is an independent national statistics portal for Indonesia: a static
-site with no build step and no network requests. Five hash-routed pages —
-Dashboard, Economy, People, Prices and a Data explorer — present 66 verified
-indicators with every figure labelled with its source and year (BPS, World
-Bank, IMF, Ministry of Finance, Bank Indonesia). Charts are hand-rolled SVG
-(line, bar and donut builders in `app/charts.js`); the data explorer's table
-is searchable, sortable and filterable, and exports its rows as CSV in the
-browser.
+NusaStat is a national statistics site for Indonesia that runs entirely
+offline from its own static files — no network requests, no build step.
+Every figure is labelled with its source and year (BPS — Statistics
+Indonesia, the World Bank, the IMF, Bank Indonesia and others), and
+nothing on the site is estimated or invented: anything that could not be
+verified to a named official source was left out. See `methodology.md`
+for the verification method and the full source list.
 
-## Run it
+## Routes
 
-Serve `app/` with any static HTTP server (for example
-`python3 -m http.server` from `app/`) and open `index.html`. Or hand it in
-with `MAKEFUN_OUTPUT_DIR=out node main.ts` from the repo root, which copies
-`app/` and `screenshots/` and writes `dossier.json`.
+- `#/` — Dashboard: headline indicators, GDP and inflation charts, provincial snapshot
+- `#/economy` — Economy: GDP, growth, sectors, trade, fiscal figures
+- `#/people` — People: population, age structure, employment, poverty, education
+- `#/prices` — Prices: CPI, inflation by group, food prices
+- `#/compare` — Compare: pick any two provinces and compare them side by side
+- `#/data` — Data: searchable, sortable, filterable explorer of every indicator, with sources and CSV download
 
-## Files
+## How to run
 
-- `app/index.html` — shell, navigation, footer
-- `app/main.js` — hash router
-- `app/data.js` — all figures, each with source and year
-- `app/charts.js` — SVG line/bar/donut builders
-- `app/views.js` — page templates, table sort/filter, CSV download
-- `app/style.css` — stylesheet, responsive down to phone size
-- `main.ts` — entrypoint: copies `app/` + `screenshots/` and writes `dossier.json`
-- `methodology.md` — data sources, verification method, corrections, chart methods
-- `shots.json` — which views the screenshots show
+```sh
+# serve the site locally (any static server works)
+python3 -m http.server 8000 --directory app
+# open http://localhost:8000/ in a browser
+```
+
+Or build the submission output with Node 22:
+
+```sh
+MAKEFUN_OUTPUT_DIR=out node main.ts
+```
+
+`main.ts` copies `app/` and `screenshots/` into the output directory and
+writes `dossier.json` via the kit's `vendor/makefun-frontend.ts`.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

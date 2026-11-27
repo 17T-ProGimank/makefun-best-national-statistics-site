@@ -1,109 +1,133 @@
 # NusaStat — Methodology
 
+Indonesia in Numbers. All figures in `app/data.js` were verified on
+26 November 2026 against the project's verified-data notes. No figure
+on this site is estimated, modelled by us, or invented: anything that
+could not be verified to a named official source was omitted (see
+"Omitted, not guessed" below).
+
 ## Data sources
 
-Every figure on the site comes from one of these authorities, and every
-figure is labelled on the page with its source and year:
+| Source | What it supplies here |
+|---|---|
+| BPS — Statistics Indonesia | GDP and GDP growth, CPI and CPI groups, Sakernas unemployment and employment, poverty and poverty line, Gini, provincial populations, sector shares of GDP, foreign tourists (not in the explorer) |
+| World Bank (WDI / WITS) | Population, GDP in US$, GDP per capita, annual-average CPI inflation, age structure, urban share, fertility, life expectancy and mortality, trade series, GNI per capita |
+| IMF (World Economic Outlook) | GDP (PPP) and GDP per capita (PPP) |
+| Ministry of Finance | APBN 2024 realisation: revenue, spending, deficit, primary deficit |
+| Bank Indonesia | PIHPS food prices (national average, Sep 2026), BI rate, exchange rate |
+| UNCTAD | FDI inflows and stock, 2024 |
+| UN World Population Prospects | Median age, 2024 |
+| CIA World Factbook | Household consumption and fixed investment shares of GDP, current-account estimate (labelled as estimates where they are estimates) |
 
-- **BPS — Statistics Indonesia** (releases, Sakernas, CPI, poverty, Gini,
-  GDP by industry, provincial populations, latest releases)
-- **World Bank** (WDI / WITS — population, GDP and GDP per capita in US$,
-  annual-average CPI inflation, age structure, services/industry shares)
-- **IMF** (WEO — GDP PPP)
-- **Ministry of Finance** (APBN 2024 realisation: revenue, spending, deficit)
-- **Bank Indonesia** (exchange rate, BI policy rate, PIHPS food prices)
-- Also cited where the primary source is a compilation: UN Comtrade / WDI
-  merchandise trade series, UN World Population Prospects (median age),
-  UNCTAD (FDI), CIA World Factbook (household consumption, fixed
-  investment, current account), IZA World of Labour (labour-force
-  participation).
+Every indicator row in the data explorer carries its own source and
+year. The full source list is also exported as `SOURCES` in
+`app/data.js`.
 
 ## Verification method
 
-Every headline figure was checked via web search on 26 November 2026
-against the primary source's own release before it was put in
-`app/data.js`. Figures that could not be verified to that standard were
-omitted, not guessed. The full verification log, including the series
-tables and the items that were left out, is in the build notes
-(`best-national-statistics-site-verified-data.md`).
-
-## Corrections made during verification
-
-1. **Life expectancy ~74 → 71.3 years.** The ~74 figure does not match the
-   World Bank 2024 value (71.3; female 73.4, male 69.2). The site uses the
-   World Bank figure and labels it.
-2. **GDP per capita: two published US$ values.** World Bank: US$4,925.43.
-   BPS: Rp 78.62m = US$4,960.33 at BPS's own implied exchange rate. The
-   site uses the World Bank US$4,925 as the headline and lists the BPS
-   rupiah figure as a separate indicator row.
-3. **Sector shares (BPS, 2024):** manufacturing 18.98%, trade 13.07%,
-   agriculture 12.61%, construction 10.09%, mining 9.15% (top five =
-   63.90% of GDP). "All other industries" (36.10%) is the computed
-   residual, labelled as such.
-4. **Inflation — two different 2024 numbers, both correct.** BPS December
-   yoy = 1.57%. World Bank annual-average CPI inflation = 2.18% (2024).
-   The KPI card uses the BPS December rate; the inflation time series uses
-   the World Bank annual-average series and is labelled as such.
-5. **Unemployment — BPS, not ILO modelled.** BPS Sakernas (August) 4.91%
-   (2024), 4.85% (2025). The World Bank/ILO modelled estimate is 3.30%
-   (2024) — a different concept; it is not used in the series.
-6. **Trade 2024 — source variance noted.** BPS/EIU: exports US$264.71bn,
-   imports US$233.67bn. UN Comtrade as-reported: exports 266.3, imports
-   235.2. The site uses the BPS figures; the trade series is the
-   consistent WDI/Comtrade merchandise series.
-7. **Jakarta population 10.685m** (mid-2024, BPS), not 11.1m — that is a
-   2025 figure.
-
-## Time series (2015–2025)
-
-- **GDP growth, % (BPS):** 4.88, 5.03, 5.07, 5.17, 5.02, −2.07, 3.69,
-  5.31, 5.05, 5.03, 5.11.
-- **Inflation, annual average, % (World Bank):** 6.4, 3.5, 3.8, 3.2, 3.0,
-  1.9, 1.6, 4.2, 3.7, 2.2, 1.9.
-- **Unemployment, August Sakernas, % (BPS):** 6.18, 5.61, 5.50, 5.34,
-  5.28, 7.07, 6.49, 5.86, 5.32, 4.91, 4.85.
-- **Population, millions (World Bank):** 261.8, 264.6, 267.3, 270.0, 272.5,
-  274.8, 276.8, 278.8, 281.2, 283.5, 285.7.
-- **Trade, US$bn (UN Comtrade/WDI merchandise; 2025 WITS):** exports
-  150.4, 144.5, 168.8, 180.2, 167.7, 163.2, 231.5, 292.0, 258.8, 264.7,
-  281.7; imports 142.7, 135.7, 157.0, 188.7, 171.3, 141.6, 196.2, 237.4,
-  221.9, 233.7, 241.8.
+1. **Start from the release, not the round-up.** Each headline figure
+   was checked against the publishing release (e.g. BPS GDP release
+   No. 17/02/Th. XXVIII, 5 Feb 2025; BPS CPI release No. 01/01/Th.
+   XXVIII, 2 Jan 2025) or the World Bank / IMF indicator value, and
+   the published precision was kept (population 283.488m, GDP
+   Rp 22,138.96tn, GDP per capita US$4,925.43).
+2. **One concept, one series.** Where two published numbers describe
+   different concepts they are never mixed:
+   - Inflation: the KPI uses the BPS December year-on-year rate
+     (1.57%); the 2015–2025 series uses the World Bank annual-average
+     CPI inflation (2.18% for 2024) and is labelled as such.
+   - Unemployment: BPS Sakernas (August) only. The World Bank / ILO
+     modelled estimate (3.30% for 2024) is a different concept and is
+     not used anywhere.
+   - GDP per capita: the World Bank US$4,925 is the headline; the BPS
+     figure (Rp 78.62m = US$4,960.33 at BPS's implied rate) is listed
+     as a separate indicator row.
+   - Life expectancy: the World Bank 2024 value (71.3 years, both
+     sexes; female 73.4, male 69.2) is used. An earlier ~74-year figure
+     did not match any official source and was corrected.
+   - Trade: the headline 2024 figures are the BPS merchandise values
+     (exports US$264.71bn, imports US$233.67bn); the 2015–2025 series
+     is the consistent UN Comtrade / WDI merchandise series, with 2025
+     from UN WITS.
+3. **Corrections recorded, not hidden.** Sector shares were corrected
+   to the BPS 2024 release (manufacturing 18.98%, trade 13.07%,
+   agriculture 12.61%, construction 10.09%, mining 9.15%); Jakarta's
+   mid-2024 population is 10.685m (the 11.1m figure is a 2025 value).
+4. **Residuals labelled.** "Other (residual)" in sector shares (29.97%)
+   and "All other (residual)" in employment (25.42%) are computed as
+   100 minus the named shares and are labelled as residuals. The
+   residual employment headcount is not published: `workers` is null
+   for that row rather than derived.
+5. **Dated, not timeless.** Food prices are Bank Indonesia PIHPS
+   national averages for September 2026 and are dated as such; the
+   2024 BPS food-price averages were not extractable and are not used.
+   Each release in "Latest releases" carries its publication date.
 
 ## Chart methods
 
-All charts are hand-rolled SVG built in `app/charts.js` — no chart library,
-no external assets. Line charts plot the series with labelled axes and
-value labels; horizontal bar charts show shares of GDP; the age-structure
-donut shows 0–14 / 15–64 / 65+ shares. Every chart carries a caption
-naming the source, the year range and the definition used, so a figure
-cannot be read without its context.
+- **Time series (2015–2025)** are drawn directly from the arrays in
+  `app/data.js` (GDP growth, inflation, unemployment, population,
+  trade). No smoothing, no interpolation, no trend line is fitted:
+  the 2020 COVID dip (GDP growth −2.07%) is shown as published.
+- **Shares** (sectors of GDP, age structure, employment) are shown as
+  published percentages that sum to 100%; the residual slices are
+  labelled "residual" so the reader can see what is named and what is
+  grouped.
+- **Provinces** are ranked by mid-2024 population (BPS); each bar
+  shows both the headcount (millions) and the share of the national
+  population. The top 10 cover 71.7% of the population.
+- **CPI groups** plot the December 2024 year-on-year rate per group
+  with its contribution in percentage points; the contributions sum
+  to the headline rate. Rates and contributions are different
+  measures and are never added together as if they were the same.
+- **KPI change labels** are computed only from the published series
+  in the same file (e.g. unemployment −0.41pp vs August 2023;
+  poverty −0.46pp vs March 2024). Where no comparable prior value was
+  verified, the change field is left blank rather than estimated.
+- **Sorotan (highlights)** compare two published values of the same
+  indicator only, and each card states both endpoints, the change,
+  and the source, so the comparison can be checked in seconds.
+- **Currency and units** are shown as published: rupiah figures in
+  trillions (tn) or millions (m), trade in US$ billions, food prices
+  in rupiah per kg or per litre. Nothing is converted between
+  currencies on the site.
 
-## What was left out
+## Omitted, not guessed
 
-- **2024 average food prices from BPS** — the publication exists but its
-  Table 1 values were not extractable via web search, so the food-price
-  table uses Bank Indonesia PIHPS national averages (Sep 2026), clearly
-  dated, not 2024 averages.
-- **CPI basket weights** — the BPS December 2024 release publishes yoy
-  rates and contributions per group, not weights; the table carries rate
-  plus contribution, not weight.
-- **HDI** — conflicting vintages (0.713 for 2022 vs 0.728 for 2023) could
-  not be pinned to a single verified UNDP release; omitted. No
-  Education-group indicator met the same bar, so the explorer has 5
-  groups, not 6.
-- **"All other sectors" employment (25.42%)** is a computed residual
-  (100 − named shares), labelled as such.
+- **HDI:** conflicting vintages (0.713 for 2022 vs 0.728 for 2023)
+  could not be pinned to a single verified UNDP release, so no HDI
+  figure appears anywhere on the site.
+- **Education-group indicators:** no Education rows met the same
+  verification bar, so the explorer has five groups (Economy, People,
+  Prices, Trade, Health), not six.
+- **CPI basket weights:** the BPS December 2024 release publishes
+  rates and contributions per group, not weights, so groups carry
+  rate + contribution only.
+- **2024 average food prices (BPS):** the BPS publication exists but
+  its table values were not extractable, so food prices use the
+  dated Bank Indonesia PIHPS averages instead.
+- **Provincial populations beyond the top 10** were not needed for
+  the top-10 table and are not listed.
 
-## Build notes
+## Round 2 changes
 
-- Static site under `app/` (index.html, main.js, data.js, charts.js,
-  views.js, style.css), no build step, no network references: the site
-  loads nothing from outside its own files (system font stack, no
-  webfonts, no images except SVG drawn in code).
-- Screenshots in `screenshots/` are real renders of the site's own code
-  in headless Chromium (desktop 1280×800 for Dashboard, Economy and Data;
-  phone 390×844 for the Dashboard), converted to JPEG quality 80,
-  each under 256 KiB, never edited.
-- Entrypoint `main.ts` (Node 22 stdlib only) copies `app/` and
-  `screenshots/` to `$MAKEFUN_OUTPUT_DIR` and writes `dossier.json` via
-  the kit's `vendor/makefun-frontend.ts`, unchanged.
+- **New Province Compare route.** A dedicated page for comparing
+  provinces side by side on population and population share, built
+  from the same verified top-10 BPS table as round 1 — no new figures.
+- **Sorotan highlights strip.** A new strip on the home page showing
+  the five fastest-moving verified indicators (GDP growth, inflation,
+  unemployment, poverty, exports), each with both endpoints, the
+  change, and its source. Every highlight is computed only from
+  figures already in the verified data set.
+- **Upgraded data explorer.** The indicator explorer now covers all
+  66 verified rows across the five groups (Economy 22, People 20,
+  Prices 10, Trade 8, Health 6), with per-row source and year, and
+  the same group filter as round 1.
+- **Data refresh.** Series extended with the verified 2025 and 2026
+  releases where available: GDP 2025 (+5.11%, Rp 23,821.1tn), GDP
+  Q3 2026 (+5.47% yoy), unemployment August 2026 (4.75%), poverty
+  March 2026 (8.07%), October 2026 inflation (3.23% yoy), 2025 trade
+  (exports US$281.7bn, imports US$241.8bn), and Bank Indonesia PIHPS
+  food prices for September 2026. All other figures re-verified
+  against the 26 November 2026 notes; no figure was carried over
+  unverified.
