@@ -18,16 +18,22 @@ nothing on the site is estimated or invented: anything that could not be
 verified to a named official source was left out. See `methodology.md`
 for the verification method and the full source list.
 
-Round 3 adds a Province Map: a tile-grid cartogram of all 38 provinces,
-colourable by population (BPS mid-2024), poverty rate (BPS Mar 2024) or
-unemployment (BPS Sakernas Aug 2024), with a detail panel for the
-selected province. The People table now lists all 38 provinces.
+Round 4 refreshes the headline KPIs to the newest verified releases
+(population 2025: 285.721 million, World Bank; GDP 2025: Rp 23,821.1
+trillion, +5.11%, BPS; GDP per capita 2025: US$5,083.4, BPS; poverty
+March 2026: 8.07%, BPS; unemployment August 2026: 4.75%, BPS
+Sakernas), adds a sparkline to every KPI card, a 2015–2025 GDP-growth
+chart and a Top-5 provinces block to the dashboard, and a Sorotan
+(highlights) strip of the biggest moves in the latest data. The site
+covers all 38 provinces — including a tile-grid Province Map colourable
+by population, poverty rate or unemployment — and 66 indicators across
+5 groups in the data explorer.
 
 ## Routes
 
-- `#/` — Dashboard: headline indicators, GDP and inflation charts, provincial snapshot, map teaser
+- `#/` — Dashboard: headline indicators with sparklines, GDP-growth chart 2015–2025, Top-5 provinces, Sorotan highlights, latest releases, key figures
 - `#/economy` — Economy: GDP, growth, sectors, trade, fiscal figures
-- `#/people` — People: population, age structure, employment, poverty, education; all 38 provinces
+- `#/people` — People: population, age structure, employment, poverty; all 38 provinces
 - `#/prices` — Prices: CPI, inflation by group, food prices
 - `#/map` — Province Map: tile cartogram of all 38 provinces, colour by population / poverty / unemployment
 - `#/compare` — Compare: pick any two provinces and compare them side by side
