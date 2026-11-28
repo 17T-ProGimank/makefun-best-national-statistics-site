@@ -1,5 +1,6 @@
 // NusaStat charts — hand-rolled SVG builders, no dependencies, no randomness.
 // Every builder returns a deterministic SVG string with a <title> for accessibility.
+// Round 4 adds sparkline(): a small label-free trend line for the KPI cards.
 
 function esc(value) {
   return String(value ?? "")
@@ -56,6 +57,52 @@ const GRID = "#e6ecea";
 const AXIS = "#8a9a96";
 const TEXT = "#33413e";
 const TEXT_MUTED = "#6b7d78";
+
+// Small label-free trend line for KPI cards. values = array of numbers;
+// opts: { width, height, color, unit, title, labels }. The polyline gets
+// a faint area fill and an amber dot on the last point. Works with as few
+// as two points (the GDP level / GDP per capita series). No axis, no
+// labels — the full series lives in the <title> for screen readers.
+export function sparkline(values, opts = {}) {
+  const width = opts.width || 300;
+  const height = opts.height || 34;
+  const color = opts.color || "#0e5f57";
+  const unit = opts.unit || "";
+  const labels = Array.isArray(opts.labels) ? opts.labels : [];
+  const title = opts.title || "Sparkline";
+  const vals = (Array.isArray(values) ? values : []).map(Number).filter(Number.isFinite);
+  if (vals.length === 0) {
+    return svgOpen(width, height, title + " — no data") + "</svg>";
+  }
+  const detail = vals.map((v, i) => {
+    const lab = labels[i] !== undefined ? labels[i] + " " : "";
+    return lab + fmtVal(v, unit);
+  }).join(", ");
+  const fullTitle = title + ": " + detail;
+  const n = vals.length;
+  let lo = Math.min(...vals);
+  let hi = Math.max(...vals);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const pad = (hi - lo) * 0.12;
+  lo -= pad; hi += pad;
+  const padX = 3;
+  const padT = 4;
+  const padB = 4;
+  const plotW = width - padX * 2;
+  const plotH = height - padT - padB;
+  const x = (i) => padX + (n === 1 ? plotW / 2 : (i * plotW) / (n - 1));
+  const y = (v) => padT + ((hi - v) / (hi - lo)) * plotH;
+  const pts = vals.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1));
+  const line = pts.map((p, i) => (i === 0 ? "M" : "L") + p).join(" ");
+  const area = line + " L" + x(n - 1).toFixed(1) + "," + (padT + plotH).toFixed(1) +
+    " L" + x(0).toFixed(1) + "," + (padT + plotH).toFixed(1) + " Z";
+  let s = svgOpen(width, height, fullTitle);
+  s += '<path d="' + area + '" fill="' + esc(color) + '" fill-opacity="0.10" stroke="none"/>';
+  s += '<path d="' + line + '" fill="none" stroke="' + esc(color) + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+  s += '<circle cx="' + x(n - 1).toFixed(1) + '" cy="' + y(vals[n - 1]).toFixed(1) + '" r="3.5" fill="#e8a317" stroke="#ffffff" stroke-width="1.5"/>';
+  s += "</svg>";
+  return s;
+}
 
 export function lineChart({ width = 640, height = 300, labels = [], values = [], color = "#0e5f57", unit = "", ymin, ymax } = {}) {
   const title = "Line chart: " + labels.map((l, i) => l + " " + fmtVal(values[i], unit)).join(", ");
@@ -122,6 +169,11 @@ export function barChart({ width = 640, height = 300, labels = [], values = [], 
   s += '<line x1="' + padL + '" y1="' + zeroY.toFixed(1) + '" x2="' + (width - padR) + '" y2="' + zeroY.toFixed(1) + '" stroke="' + AXIS + '" stroke-width="1"/>';
   const slot = plotW / n;
   const barW = Math.max(8, Math.min(64, slot * 0.62));
+  // Dense charts (narrow slots) would overlap neighbouring value
+  // labels, so only the first, last and largest bars get a label;
+  // wide charts label every bar.
+  const showAllLabels = slot >= 40;
+  const maxV = Math.max(...vals);
   vals.forEach((v, i) => {
     const cx = padL + slot * i + slot / 2;
     const top = y(Math.max(v, 0));
@@ -129,19 +181,20 @@ export function barChart({ width = 640, height = 300, labels = [], values = [], 
     const h = Math.max(1, Math.abs(bottom - top));
     const barTop = v >= 0 ? top : zeroY;
     s += '<rect x="' + (cx - barW / 2).toFixed(1) + '" y="' + barTop.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" fill="' + esc(color) + '"/>';
-    s += '<text x="' + cx.toFixed(1) + '" y="' + (barTop - 7).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + TEXT + '">' + esc(fmtVal(v, unit)) + "</text>";
+    if (showAllLabels || i === 0 || i === n - 1 || v === maxV) {
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (barTop - 7).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + TEXT + '">' + esc(fmtVal(v, unit)) + "</text>";
+    }
     s += '<text x="' + cx.toFixed(1) + '" y="' + (padT + plotH + 20).toFixed(1) + '" text-anchor="middle" font-size="11" fill="' + TEXT_MUTED + '">' + esc(labs[i]) + "</text>";
   });
   s += "</svg>";
   return s;
 }
 
-export function hbarChart({ width = 640, height = 300, items = [], color = "#0e5f57", unit = "" } = {}) {
+export function hbarChart({ width = 640, height = 300, items = [], color = "#0e5f57", unit = "", rowH = 30 } = {}) {
   const title = "Horizontal bar chart: " + items.map((d) => d.label + " " + fmtVal(d.value, unit)).join(", ");
   if (!items.length) {
     return svgOpen(width, height, "Horizontal bar chart — no data") + '<text x="16" y="30" fill="' + TEXT_MUTED + '" font-size="13">No data</text></svg>';
   }
-  const rowH = 30;
   const top = 14;
   const bottom = 12;
   const needH = top + items.length * rowH + bottom;
@@ -353,6 +406,81 @@ export function buildTileMap(tiles, opts = {}) {
     }
     s += "</g>";
   }
+  s += "</svg>";
+  return s;
+}
+
+// Population pyramid from the three age bands in AGE_STRUCTURE.
+// No male/female split is published in the site's data, so the pyramid
+// is a single centred column: one bar per band, stacked oldest on top
+// and youngest at the bottom (the conventional pyramid order), with
+// each bar's width proportional to that band's share of the
+// population. The silhouette therefore reads as a pyramid without
+// inventing a sex split. The dependency ratio printed under the bars
+// — dependants per 100 people of working age — is computed here at
+// runtime from the same three numbers, so the figure can never drift
+// away from the bars above it.
+export function buildPyramid(items, opts = {}) {
+  const width = opts.width || 640;
+  const height = opts.height || 300;
+  const bands = (items || []).filter(function (d) {
+    return d && Number.isFinite(Number(d.pct));
+  });
+  if (!bands.length) {
+    return svgOpen(width, height, "Population pyramid — no data") +
+      '<text x="16" y="30" fill="' + TEXT_MUTED + '" font-size="13">No data</text></svg>';
+  }
+  const total = bands.reduce(function (a, d) { return a + Number(d.pct); }, 0);
+  const title = "Population pyramid: " + bands.map(function (d) {
+    return d.label + " " + fmtVal(d.pct, "%");
+  }).join(", ");
+  // Oldest band first, so it sits at the top of the stack.
+  const ordered = bands.slice().reverse();
+  const palette = ["#a86f05", "#0e5f57", "#2f8f7a"];
+  const maxPct = Math.max.apply(null, bands.map(function (d) { return Number(d.pct); }));
+  const cx = width / 2;
+  const labelW = 118;
+  const maxHalf = Math.max(40, cx - labelW - 64);
+  const top = 34;
+  const bottom = height - 52;
+  const rowH = (bottom - top) / ordered.length;
+  const barH = Math.min(44, rowH - 18);
+  let s = svgOpen(width, height, title);
+  s += '<line x1="' + cx + '" y1="' + (top - 8) + '" x2="' + cx + '" y2="' + bottom +
+    '" stroke="' + AXIS + '" stroke-width="1" stroke-dasharray="3 3" />';
+  s += '<text x="' + cx + '" y="20" text-anchor="middle" font-size="12" fill="' +
+    TEXT_MUTED + '">Share of population (%) — widest bar is the largest age group</text>';
+  ordered.forEach(function (d, i) {
+    const pct = Number(d.pct);
+    const half = (pct / maxPct) * maxHalf;
+    const y = top + i * rowH + (rowH - barH) / 2;
+    const color = palette[i % palette.length];
+    s += '<text x="' + (cx - half - 10) + '" y="' + (y + barH / 2 + 5).toFixed(1) +
+      '" text-anchor="end" font-size="13" fill="' + TEXT + '">' + esc(d.label) + "</text>";
+    s += '<rect x="' + (cx - half).toFixed(1) + '" y="' + y.toFixed(1) +
+      '" width="' + (half * 2).toFixed(1) + '" height="' + barH.toFixed(1) +
+      '" rx="4" fill="' + color + '"><title>' + esc(d.label + ": " + fmtVal(pct, "%")) + "</title></rect>";
+    s += '<text x="' + (cx + half + 10) + '" y="' + (y + barH / 2 + 5).toFixed(1) +
+      '" text-anchor="start" font-size="13" font-weight="700" fill="' + TEXT + '">' +
+      fmtVal(pct, "%") + "</text>";
+  });
+  // Dependency ratio: (youngest + oldest) per 100 working-age people.
+  // Bands are matched by their label, so a reordered input still works.
+  const findBand = function (re) {
+    const hit = bands.find(function (d) { return re.test(String(d.label)); });
+    return hit ? Number(hit.pct) : 0;
+  };
+  const young = findBand(/^0/);
+  const working = findBand(/^15/);
+  const old = findBand(/^65/);
+  const ratio = working > 0 ? ((young + old) / working) * 100 : 0;
+  const ratioText = working > 0
+    ? "Dependency ratio: " + fmtNum(Math.round(ratio * 10) / 10) +
+      " dependants per 100 people of working age"
+    : "Dependency ratio: not computable from these bands";
+  s += '<text x="' + cx + '" y="' + (height - 28) + '" text-anchor="middle" font-size="13" font-weight="700" fill="' + TEXT + '">' + esc(ratioText) + "</text>";
+  s += '<text x="' + cx + '" y="' + (height - 10) + '" text-anchor="middle" font-size="12" fill="' + TEXT_MUTED + '">' +
+    "Bands sum to " + fmtVal(Math.round(total * 10) / 10, "%") + " of the population" + "</text>";
   s += "</svg>";
   return s;
 }

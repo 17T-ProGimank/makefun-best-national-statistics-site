@@ -13,9 +13,13 @@ import {
   renderData,
   renderCompare,
   renderMap,
+  renderCalculator,
+  renderSources,
   bindCompare,
-  bindMap
+  bindMap,
+  bindCalculator
 } from "./views.js";
+import { initHeaderSearch } from "./search.js";
 
 const app = document.getElementById("app");
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
@@ -27,7 +31,9 @@ const TITLES = {
   prices: "Prices — NusaStat | Indonesia in Numbers",
   data: "Data — NusaStat | Indonesia in Numbers",
   compare: "Compare Provinces — NusaStat | Indonesia in Numbers",
-  map: "Province Map — NusaStat | Indonesia in Numbers"
+  map: "Province Map — NusaStat | Indonesia in Numbers",
+  calculator: "Purchasing-Power Calculator — NusaStat | Indonesia in Numbers",
+  sources: "Sources & Method — NusaStat | Indonesia in Numbers"
 };
 
 const RENDERERS = {
@@ -37,7 +43,9 @@ const RENDERERS = {
   prices: renderPrices,
   data: renderData,
   compare: renderCompare,
-  map: renderMap
+  map: renderMap,
+  calculator: renderCalculator,
+  sources: renderSources
 };
 
 function parseRoute() {
@@ -60,6 +68,11 @@ function bindPage(route) {
 
   if (route === "map") {
     bindMap();
+    return;
+  }
+
+  if (route === "calculator") {
+    bindCalculator();
   }
 }
 
@@ -80,6 +93,8 @@ function renderRoute() {
   window.scrollTo(0, 0);
   window.__shotReady = true;
 }
+
+initHeaderSearch();
 
 window.addEventListener("hashchange", renderRoute);
 

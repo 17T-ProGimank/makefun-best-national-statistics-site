@@ -1,4 +1,4 @@
-// NusaStat — Indonesia in Numbers (Round 3 data layer)
+// NusaStat — Indonesia in Numbers (Round 4 data layer)
 // ------------------------------------------------------
 // Sources: BPS (Statistics Indonesia), World Bank (WDI / WITS),
 // IMF (World Economic Outlook), Ministry of Finance, Bank Indonesia,
@@ -18,59 +18,80 @@
 // from UN WITS. "Other (residual)" / "All other (residual)" shares are
 // computed as 100 minus the named shares and labelled as such.
 // This file contains no network references of any kind.
+//
+// ROUND 4 changes (28 Nov 2026): the headline KPIs were refreshed to
+// the newest verified releases — population 2025 (World Bank WDI,
+// 285,721,236), GDP 2025 and GDP per capita 2025 (BPS Official
+// Statistics News No. 18/02/Th. XXIX, 5 Feb 2026: GDP Rp 23,821.1tn,
+// growth 5.11%, GDP per capita Rp 83.7m / US$5,083.4), unemployment
+// Aug 2026 (BPS Sakernas release, 5 Nov 2026: 4.75%, vs 4.85% Aug 2025),
+// poverty Mar 2026 (BPS Official Statistics News No. 80/08/Th. XXIX,
+// 5 Aug 2026: 8.07%, vs 8.25% Sep 2025 and 8.47% Mar 2025). The
+// inflation KPI stays on the BPS December year-on-year concept (1.57%,
+// Dec 2024): the October 2026 yoy figure (3.23%) is a different month
+// and is already carried in the releases list.
+// New in round 4: GDP_LEVEL_SERIES, GDP_PER_CAPITA_SERIES and
+// POVERTY_SERIES — short series built ONLY from figures already
+// verified in this file or in the two BPS releases above (the Mar 2025
+// and Sep 2025 poverty points are the arithmetic implied by the Aug
+// 2026 BPS release: 8.07% down 0.40pp from Mar 2025 and 0.18pp from
+// Sep 2025). KPI_SPARKLINES maps each KPI card to its series.
+// The data explorer holds 66 indicators (the "78" figure in the
+// 28 Nov leader analysis was a miscount — this file has always listed
+// 66 rows across 5 groups, verified by counting INDICATORS).
 
 export const YEARS = [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
-export const NATIONAL_POP = 283.488; // millions, 2024, World Bank
+export const NATIONAL_POP = 285.721; // millions, 2025, World Bank (285,721,236)
 
 export const KPI = [
   {
     label: "Population",
-    value: "283.488m",
-    change: "+0.82% yoy",
-    changeNote: "vs 281.2m in 2023 (World Bank)",
+    value: "285.721m",
+    change: "+0.79% yoy",
+    changeNote: "vs 283.488m in 2024",
     source: "World Bank",
-    year: 2024,
+    year: 2025,
   },
   {
     label: "GDP",
-    value: "Rp 22,139tn / US$1,396.3bn",
-    change: "+5.03% yoy",
-    changeNote: "Real GDP growth, 2024",
-    source: "BPS / World Bank",
-    year: 2024,
+    value: "Rp 23,821tn",
+    change: "+5.11% yoy",
+    changeNote: "Real growth 2025, vs 5.03% in 2024",
+    source: "BPS",
+    year: 2025,
   },
   {
     label: "GDP per capita",
-    value: "US$4,925",
+    value: "US$5,083",
     change: "",
-    changeNote: "World Bank; BPS figure Rp 78.62m",
-    source: "World Bank",
-    year: 2024,
+    changeNote: "BPS figure Rp 83.7m",
+    source: "BPS",
+    year: 2025,
   },
   {
     label: "Inflation",
     value: "1.57% Dec yoy",
     change: "-1.5pp",
-    changeNote: "Annual-average inflation 3.7% in 2023 to 2.2% in 2024 (World Bank)",
+    changeNote: "Annual avg 3.7% → 2.2%",
     source: "BPS",
     year: 2024,
   },
   {
     label: "Unemployment",
-    value: "4.91% Aug",
-    change: "-0.41pp",
-    changeNote: "vs 5.32% in Aug 2023 (BPS Sakernas)",
+    value: "4.75% Aug",
+    change: "-0.10pp",
+    changeNote: "vs 4.85% in Aug 2025",
     source: "BPS",
-    year: 2024,
+    year: 2026,
   },
   {
     label: "Poverty",
-    value: "8.57% Sep",
-    change: "-0.46pp",
-    changeNote: "vs 9.03% in Mar 2024",
+    value: "8.07% Mar",
+    change: "-0.18pp",
+    changeNote: "vs 8.25% in Sep 2025",
     source: "BPS",
-    year: 2024,
+    year: 2026,
   },
 ];
 
@@ -109,6 +130,43 @@ export const SECTORS = [
   { name: "Transport & storage", share: 6.13 },
   { name: "Other (residual)", share: 29.97 },
 ]; // BPS, share of GDP 2024, %; residual = 100 minus named shares
+
+// Short series for the KPI sparklines, from verified figures only.
+// GDP level: BPS, GDP at current prices — Rp 22,139tn in 2024 and
+// Rp 23,821.1tn in 2025 (BPS release No. 18/02/Th. XXIX, 5 Feb 2026).
+export const GDP_LEVEL_SERIES = {
+  years: [2024, 2025],
+  values: [22139, 23821.1],
+};
+
+// GDP per capita: World Bank US$4,925 in 2024; BPS US$5,083.4 in 2025
+// (same BPS release as above; BPS figure Rp 83.7m).
+export const GDP_PER_CAPITA_SERIES = {
+  years: [2024, 2025],
+  values: [4925, 5083.4],
+};
+
+// Poverty rate, half-yearly: Mar 2024 9.03% and Sep 2024 8.57% (BPS);
+// Mar 2025 8.47% and Sep 2025 8.25% (implied by BPS release
+// No. 80/08/Th. XXIX, 5 Aug 2026: 8.07% is down 0.40pp from Mar 2025
+// and 0.18pp from Sep 2025); Mar 2026 8.07% (same release).
+export const POVERTY_SERIES = {
+  labels: ["Mar 2024", "Sep 2024", "Mar 2025", "Sep 2025", "Mar 2026"],
+  values: [9.03, 8.57, 8.47, 8.25, 8.07],
+};
+
+// One sparkline series per KPI card, keyed by KPI label.
+// The inflation sparkline is the World Bank annual-average series —
+// the card's headline value stays the BPS December year-on-year rate,
+// and the sparkline's own title says which series it draws.
+export const KPI_SPARKLINES = {
+  "Population": { labels: YEARS, values: POPULATION_SERIES.values, unit: "m", title: "Population, 2015–2025 (millions, World Bank)" },
+  "GDP": { labels: GDP_LEVEL_SERIES.years, values: GDP_LEVEL_SERIES.values, unit: "Rp tn", title: "GDP at current prices, 2024–2025 (Rp trillion, BPS)" },
+  "GDP per capita": { labels: GDP_PER_CAPITA_SERIES.years, values: GDP_PER_CAPITA_SERIES.values, unit: "US$", title: "GDP per capita, 2024–2025 (US$, BPS / World Bank)" },
+  "Inflation": { labels: YEARS, values: INFLATION_SERIES.values, unit: "%", title: "Annual-average inflation, 2015–2025 (%, World Bank)" },
+  "Unemployment": { labels: YEARS, values: UNEMPLOYMENT_SERIES.values, unit: "%", title: "Unemployment rate, August, 2015–2025 (%, BPS Sakernas)" },
+  "Poverty": { labels: POVERTY_SERIES.labels, values: POVERTY_SERIES.values, unit: "%", title: "Poverty rate, Mar 2024–Mar 2026 (%, BPS)" },
+};
 
 // All 38 provinces, sorted by population descending.
 // Population: BPS, mid-2024 (June), Hasil Proyeksi Penduduk Interim

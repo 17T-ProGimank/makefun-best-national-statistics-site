@@ -1,6 +1,9 @@
 /* NusaStat — Indonesia in Numbers
    Fresh stylesheet for the national statistics portal.
-   Deep teal and warm amber on warm paper; system fonts only. */
+   Deep teal and warm amber on warm paper; system fonts only.
+   Round 4: tighter dashboard spacing so the KPI sparklines, the
+   GDP chart, the Top-5 block and the Sorotan strip all fit in the
+   first 800px at 1280px wide. */
 
 /* ---------- tokens ---------- */
 :root {
@@ -92,7 +95,7 @@ svg text {
 }
 
 main#app {
-  padding: 28px 0 48px;
+  padding: 12px 0 48px;
 }
 
 /* ---------- header ---------- */
@@ -215,10 +218,32 @@ main#app {
   max-width: 70ch;
 }
 
+/* Credibility strip directly under the dashboard H1 (round 4). */
+.cred-strip {
+  display: inline-block;
+  margin: 4px 0 6px;
+  padding: 5px 14px;
+  background: var(--teal-soft);
+  border: 1px solid var(--edge-strong);
+  border-radius: 999px;
+  color: var(--teal-deep);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.page-head p.cred-strip {
+  max-width: none;
+}
+
 .page-note {
   margin: 0;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.page-note strong {
+  color: var(--ink);
 }
 
 .section-head {
@@ -262,7 +287,7 @@ main#app {
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .kpi-card {
@@ -315,6 +340,58 @@ main#app {
   font-size: 0.78rem;
 }
 
+/* KPI sparkline (round 4): small trend line between the delta and the
+   source line. The SVG scales to the card width. */
+.kpi-spark {
+  margin-top: 6px;
+}
+
+.kpi-spark svg {
+  width: 100%;
+  height: auto;
+}
+
+.kpi-card p,
+.highlight-card p {
+  margin: 0;
+}
+
+/* Compact dashboard so the cover fits in 800px (round 4). */
+.dashboard {
+  gap: 10px;
+}
+
+.dashboard .kpi-card {
+  padding: 12px 16px;
+  line-height: 1.35;
+}
+
+.dashboard .kpi-value {
+  font-size: 1.45rem;
+}
+
+.dashboard .kpi-change {
+  font-size: 0.86rem;
+}
+
+.dashboard .kpi-note {
+  font-size: 0.82rem;
+}
+
+.dashboard .kpi-source {
+  padding-top: 4px;
+}
+
+/* Cover chart row: GDP chart wide, Top-5 provinces narrower. */
+.dash-cover-grid {
+  grid-template-columns: 1.5fr 1fr;
+}
+
+.chart-title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+}
+
 /* ---------- highlight strip ---------- */
 .highlight-strip {
   display: flex;
@@ -327,7 +404,7 @@ main#app {
   background: var(--amber-soft);
   border: 1px solid #f0dca0;
   border-radius: var(--radius-card);
-  padding: 14px 18px;
+  padding: 12px 16px;
 }
 
 .highlight-label {
@@ -339,7 +416,7 @@ main#app {
 }
 
 .highlight-move {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   margin-top: 2px;
 }
@@ -362,7 +439,7 @@ main#app {
 .chart-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 12px;
 }
 
 .chart-card {
@@ -371,13 +448,14 @@ main#app {
   border: 1px solid var(--edge);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow);
-  padding: 18px 20px;
+  padding: 16px 20px;
 }
 
 .chart-card figcaption {
   margin-top: 10px;
   color: var(--muted);
   font-size: 0.86rem;
+  line-height: 1.4;
 }
 
 .chart-card figcaption strong {
@@ -442,6 +520,19 @@ main#app {
 
 .map-teaser strong {
   color: var(--amber);
+}
+
+/* Map teaser used as a grid cell next to a chart (round 4 dashboard). */
+.chart-grid > .map-teaser {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.chart-grid > .map-teaser .btn {
+  align-self: flex-start;
+  margin-top: 4px;
 }
 
 /* ---------- tables ---------- */
@@ -871,6 +962,10 @@ select {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .dash-cover-grid {
+    grid-template-columns: 1fr;
+  }
+
   .map-layout {
     flex-direction: column;
   }
@@ -886,7 +981,7 @@ select {
   html { font-size: 15px; }
 
   main#app {
-    padding: 20px 0 36px;
+    padding: 16px 16px 36px;
   }
 
   .header-inner {
@@ -944,6 +1039,10 @@ select {
   .data-table td {
     padding: 8px;
   }
+
+  /* The -4px side margin overflows the 390px viewport: keep tables
+     flush inside the page padding on phones. */
+  .table-wrap { margin: 0; }
 }
 
 /* ---------- reduced motion ---------- */
@@ -954,5 +1053,256 @@ select {
     transition: none !important;
     animation: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Round 4 additions: header search, release digest, calculator, takeaway.
+   --------------------------------------------------------------------------- */
+
+/* Header search: sits at the right end of the header row; the dropdown
+   is positioned against it so it never pushes the nav around. */
+.header-inner { flex-wrap: wrap; }
+.site-search { position: relative; margin-left: auto; }
+.site-search input {
+  width: 230px;
+  padding: 8px 12px;
+  border: 1px solid var(--hatch-widget-border, #c9d4d2);
+  border-radius: 999px;
+  background: var(--hatch-widget-surface, #fff);
+  color: var(--hatch-widget-text, #14201e);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.site-search input:focus {
+  outline: 2px solid var(--hatch-widget-focus, #0e5f57);
+  outline-offset: 1px;
+}
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 340px;
+  max-width: 90vw;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--hatch-widget-surface, #fff);
+  border: 1px solid var(--hatch-widget-border, #c9d4d2);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(10, 30, 28, 0.18);
+  z-index: 40;
+  padding: 4px;
+}
+.search-result {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--hatch-widget-text, #14201e);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.search-result.active { background: var(--hatch-widget-surface-muted, #eef4f2); }
+.search-kind {
+  grid-row: span 2;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--hatch-widget-muted, #5a6b68);
+  padding-top: 2px;
+}
+.search-label { font-weight: 700; }
+.search-detail {
+  grid-column: 2;
+  font-size: 0.8rem;
+  color: var(--hatch-widget-muted, #5a6b68);
+}
+.search-empty {
+  padding: 10px 12px;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--hatch-widget-muted, #5a6b68);
+}
+
+/* Release digest: spotlight card for the newest release, plus a
+   per-year count of releases as short bars. */
+.release-digest { margin-bottom: 8px; }
+.digest-spotlight h3 { margin: 2px 0 6px; font-size: 1.15rem; }
+.digest-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hatch-widget-muted, #5a6b68);
+}
+.digest-age { margin: 8px 0 0; font-size: 0.85rem; font-style: italic; }
+.digest-years { list-style: none; margin: 12px 0 0; padding: 0; }
+.digest-years li {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+}
+.digest-year { font-weight: 700; }
+.digest-bar {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: #0e5f57;
+}
+.digest-count { font-size: 0.85rem; color: var(--hatch-widget-muted, #5a6b68); }
+
+/* Purchasing-power calculator: three fields in a row on desktop,
+   stacked on a phone; the result sentence is the loudest line. */
+.calculator-form {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 14px;
+  align-items: end;
+}
+.calc-field { display: grid; gap: 6px; font-weight: 700; font-size: 0.9rem; }
+.calc-field input,
+.calc-field select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--hatch-widget-border, #c9d4d2);
+  border-radius: 8px;
+  background: var(--hatch-widget-surface, #fff);
+  color: var(--hatch-widget-text, #14201e);
+  font: inherit;
+  font-weight: 400;
+}
+.calc-result {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+/* Compare takeaway: a plain-language box at the foot of the route. */
+.compare-takeaway {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-left: 4px solid #0e5f57;
+  border-radius: 0 10px 10px 0;
+  background: var(--hatch-widget-surface-muted, #eef4f2);
+}
+.compare-takeaway h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.compare-takeaway p { margin: 0 0 8px; }
+.compare-takeaway p:last-child { margin-bottom: 0; }
+
+@media (max-width: 720px) {
+  .site-search { flex-basis: 100%; margin-left: 0; }
+  .site-search input { width: 100%; }
+  .search-results { width: 100%; }
+  .calculator-form { grid-template-columns: 1fr; }
+}
+
+/* Calculator quick-amount chips. */
+.calc-chips {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--hatch-widget-muted, #5a6b68);
+}
+.calc-chip {
+  margin: 0 4px 4px 0;
+  padding: 5px 12px;
+  border: 1px solid var(--hatch-widget-border, #c9d4d2);
+  border-radius: 999px;
+  background: var(--hatch-widget-surface, #fff);
+  color: var(--hatch-widget-text, #14201e);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.calc-chip:hover { background: var(--hatch-widget-surface-muted, #eef4f2); }
+
+/* Recent searches offered when the header box is focused empty. */
+.search-recent-title {
+  margin: 0;
+  padding: 8px 12px 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--hatch-widget-muted, #5a6b68);
+}
+.search-recent {
+  margin: 4px 0 4px 8px;
+  padding: 4px 12px;
+  border: 1px solid var(--hatch-widget-border, #c9d4d2);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hatch-widget-text, #14201e);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.search-recent:hover { background: var(--hatch-widget-surface-muted, #eef4f2); }
+
+/* ---------- sources & method page ---------- */
+.sources .sources-howto {
+  padding: 6px 22px 6px 8px;
+}
+
+.sources-howto ol {
+  margin: 10px 0;
+  padding-left: 26px;
+}
+
+.sources-howto li {
+  margin: 10px 0;
+  line-height: 1.55;
+}
+
+.sources-table td:first-child {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sources-table td:nth-child(3) {
+  white-space: nowrap;
+}
+
+.omitted-list {
+  margin: 4px 0 18px;
+  padding: 14px 18px 14px 38px;
+  border: 1px solid var(--edge-strong);
+  border-left: 4px solid var(--amber);
+  border-radius: var(--radius-card);
+  background: var(--amber-soft);
+  list-style: disc;
+}
+
+.omitted-list li {
+  margin: 10px 0;
+  line-height: 1.55;
+}
+
+/* ---------- population pyramid ---------- */
+.pyramid-card svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 720px) {
+  .sources-table td:first-child,
+  .sources-table td:nth-child(3) {
+    white-space: normal;
+  }
+
+  .sources-howto {
+    padding: 4px 14px 4px 2px;
   }
 }
